@@ -3,6 +3,7 @@ using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Security.Claims;
 
 namespace Explorer.API.Controllers.Author.TourAuthoring
@@ -18,12 +19,22 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
             _tourService = tourService;
         }
 
+        private static readonly HttpClient _sharedClient = new()
+        {
+            BaseAddress = new Uri("http://localhost:8081/"),
+        };
+
         [Authorize(Roles = "author")]
         [HttpGet]
-        public ActionResult<PagedResult<TourResponseDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
+        public async Task<ActionResult<PagedResult<TourResponseDto>>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
         {
-            var result = _tourService.GetAllPaged(page, pageSize);
-            return CreateResponse(result);
+            using HttpResponseMessage response = await _sharedClient.GetAsync("tours");
+            response.EnsureSuccessStatusCode();
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            var data = JsonConvert.DeserializeObject<PagedResult<TourResponseDto>>(jsonResponse);
+
+            return Ok(data);
         }
 
         [Authorize(Roles = "author")]
@@ -54,6 +65,9 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
                 tour.AuthorId = long.Parse(identity.FindFirst("id").Value);
             }
             var result = _tourService.Create(tour);
+
+            // Ovde pozvati iz go projekta
+
             return CreateResponse(result);
         }
 
@@ -83,6 +97,9 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
         public ActionResult GetEquipment(int tourId)
         {
             var result = _tourService.GetEquipment(tourId);
+
+            // za go dodati http
+
             return CreateResponse(result);
         }
 
@@ -91,6 +108,9 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
         public ActionResult AddEquipment(int tourId, int equipmentId)
         {
             var result = _tourService.AddEquipment(tourId, equipmentId);
+
+            // za go dodati http
+
             return CreateResponse(result);
         }
 
@@ -99,6 +119,9 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
         public ActionResult DeleteEquipment(int tourId, int equipmentId)
         {
             var result = _tourService.DeleteEquipment(tourId, equipmentId);
+
+            // za go dodati http
+
             return CreateResponse(result);
         }
 
