@@ -1,12 +1,9 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.TourAuthoring;
-using Explorer.Tours.Core.Domain.Tours;
-using Explorer.Tours.Core.UseCases.TourAuthoring;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Security.Claims;
 using System.Text;
 
 namespace Explorer.API.Controllers.Author.TourAuthoring;
@@ -49,16 +46,18 @@ public class KeyPointController : BaseApiController
         StringContent content = new(json, Encoding.UTF8, "application/json");
 
         var response = await _sharedClient.PutAsync("keyPoints/", content);
+        response.EnsureSuccessStatusCode();
 
         return Ok(response);
     }
 
     [Authorize(Roles = "author, tourist")]
     [HttpDelete("tours/{tourId:long}/key-points/{id:long}")]
-    public ActionResult Delete(long tourId, long id)
+    public async Task<ActionResult> Delete(long tourId, long id)
     {
-        var result = _keyPointService.Delete(id);
-        return CreateResponse(result);
+        var response = await _sharedClient.DeleteAsync("keyPoints/" + id);
+        response.EnsureSuccessStatusCode();
+        return Ok(response);
     }
 
     [Authorize(Roles = "author")]
