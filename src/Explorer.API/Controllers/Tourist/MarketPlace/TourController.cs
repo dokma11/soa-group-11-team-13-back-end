@@ -2,6 +2,7 @@
 using Explorer.Payments.API.Public;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
+using FluentResults;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -20,6 +21,11 @@ namespace Explorer.API.Controllers.Tourist.MarketPlace
             _shoppingCartService = shoppingCartService;
         }
 
+        private static readonly HttpClient _sharedClient = new()
+        {
+            BaseAddress = new Uri("http://localhost:8081/"),
+        };
+
         [Authorize(Roles = "author, tourist")]
         [HttpGet("tours/published")]
         public ActionResult<PagedResult<LimitedTourViewResponseDto>> GetPublishedTours([FromQuery] int page, [FromQuery] int pageSize)
@@ -29,10 +35,16 @@ namespace Explorer.API.Controllers.Tourist.MarketPlace
         }
 
         [HttpGet("tours/{tourId:long}")]
-        public ActionResult<PagedResult<TourResponseDto>> GetById(long tourId)
+        public async Task<ActionResult<TourResponseDto>> GetById(long tourId)
         {
-            var result = _tourService.GetById(tourId);
-            return CreateResponse(result);
+            var response = await _sharedClient.GetFromJsonAsync<TourResponseDto>("tours/" + tourId);
+
+            if (response != null)
+            {
+                return Ok(response);
+            }
+
+            return BadRequest();
         }
 
         [HttpGet("tours/can-be-rated/{tourId:long}")]
