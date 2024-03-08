@@ -1,4 +1,5 @@
-﻿using Explorer.Tours.API.Dtos;
+﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.TourAuthoring;
 using Explorer.Tours.Core.Domain.Tours;
 using Microsoft.AspNetCore.Authorization;
@@ -16,13 +17,20 @@ namespace Explorer.API.Controllers.Tourist.MarketPlace
             _keyPointService = keyPointService;
         }
 
+        private static readonly HttpClient _sharedClient = new()
+        {
+            BaseAddress = new Uri("http://localhost:8081/"),
+        };
+
         [Authorize(Roles = "author, tourist")]
         [HttpGet("tours/{tourId:long}/key-points")]
-        public ActionResult<KeyPointResponseDto> GetKeyPoints(long tourId)
+        public async Task<ActionResult<KeyPointResponseDto>> GetKeyPoints(long tourId)
         {
-            var result = _keyPointService.GetByTourId(tourId);
-            return CreateResponse(result);
+            var response = await _sharedClient.GetFromJsonAsync<List<KeyPointResponseDto>>("keyPoints/tour/" + tourId);
+
+            return Ok(response);
         }
+
         [Authorize(Roles = "tourist")]
         [HttpGet("{campaignId:long}/key-points")]
         public ActionResult<KeyPointResponseDto> GetCampaignKeyPoints(long campaignId)

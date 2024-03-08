@@ -1,9 +1,13 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.TourAuthoring;
+using Explorer.Tours.Core.Domain.Tours;
 using Explorer.Tours.Core.UseCases.TourAuthoring;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Security.Claims;
+using System.Text;
 
 namespace Explorer.API.Controllers.Author.TourAuthoring;
 
@@ -17,22 +21,36 @@ public class KeyPointController : BaseApiController
         _keyPointService = keyPointService;
     }
 
+    private static readonly HttpClient _sharedClient = new()
+    {
+        BaseAddress = new Uri("http://localhost:8081/"),
+    };
+
     [Authorize(Roles = "author")]
     [HttpPost("tours/{tourId:long}/key-points")]
-    public ActionResult<KeyPointResponseDto> CreateKeyPoint([FromRoute] long tourId, [FromBody] KeyPointCreateDto keyPoint)
+    public async Task<ActionResult<KeyPointResponseDto>> CreateKeyPoint([FromRoute] long tourId, [FromBody] KeyPointCreateDto keyPoint)
     {
         keyPoint.TourId = tourId;
-        var result = _keyPointService.Create(keyPoint);
-        return CreateResponse(result);
+        string json = JsonConvert.SerializeObject(keyPoint);
+        StringContent content = new(json, Encoding.UTF8, "application/json");
+
+        HttpResponseMessage response = await _sharedClient.PostAsync("keyPoints", content);
+        response.EnsureSuccessStatusCode();
+
+        return Ok(response);
     }
 
     [Authorize(Roles = "author")]
     [HttpPut("tours/{tourId:long}/key-points/{id:long}")]
-    public ActionResult<KeyPointResponseDto> Update(long tourId, long id, [FromBody] KeyPointUpdateDto keyPoint)
+    public async Task<ActionResult<KeyPointResponseDto>> Update(long tourId, long id, [FromBody] KeyPointUpdateDto keyPoint)
     {
         keyPoint.Id = id;
-        var result = _keyPointService.Update(keyPoint);
-        return CreateResponse(result);
+        string json = JsonConvert.SerializeObject(keyPoint);
+        StringContent content = new(json, Encoding.UTF8, "application/json");
+
+        var response = await _sharedClient.PutAsync("keyPoints/", content);
+
+        return Ok(response);
     }
 
     [Authorize(Roles = "author, tourist")]
