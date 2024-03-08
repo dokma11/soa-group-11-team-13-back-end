@@ -5,11 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Security.Claims;
+using System.Text;
 
 namespace Explorer.API.Controllers.Author.TourAuthoring
 {
-    
-    [Route("api/tour")] 
+
+    [Route("api/tour")]
     public class TourController : BaseApiController
     {
         private readonly ITourService _tourService;
@@ -26,7 +27,7 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
 
         [Authorize(Roles = "author")]
         [HttpGet]
-        public async Task<ActionResult<PagedResult<TourResponseDto>>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
+        public async Task<ActionResult<PagedResult<TourResponseDto>>> GetAll()
         {
             using HttpResponseMessage response = await _sharedClient.GetAsync("tours");
             response.EnsureSuccessStatusCode();
@@ -47,28 +48,40 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
 
         [Authorize(Roles = "author, tourist")]
         [HttpGet("authors")]
-        public ActionResult<PagedResult<TourResponseDto>> GetAuthorsTours([FromQuery] int page, [FromQuery] int pageSize)
+        public async Task<ActionResult<PagedResult<TourResponseDto>>> GetAuthorsTours()
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var id = long.Parse(identity.FindFirst("id").Value);
-            var result = _tourService.GetAuthorsPagedTours(id, page, pageSize);
-            return CreateResponse(result);
+
+            var response = await _sharedClient.GetFromJsonAsync<List<TourResponseDto>>("tours/authors/" + id);
+
+            if (response != null)
+            {
+                var pagedResult = new PagedResult<TourResponseDto>(response, response.Count);
+                return Ok(pagedResult);
+            }
+
+            return BadRequest();
         }
 
         [Authorize(Roles = "author, tourist")]
         [HttpPost]
-        public ActionResult<TourResponseDto> Create([FromBody] TourCreateDto tour)
+        public async Task<ActionResult<TourResponseDto>> Create([FromBody] TourCreateDto tour)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity != null && identity.IsAuthenticated)
             {
                 tour.AuthorId = long.Parse(identity.FindFirst("id").Value);
             }
-            var result = _tourService.Create(tour);
 
-            // Ovde pozvati iz go projekta
+            string json = JsonConvert.SerializeObject(tour);
+            StringContent content = new(json, Encoding.UTF8, "application/json");
 
-            return CreateResponse(result);
+            HttpResponseMessage response = await _sharedClient.PostAsync("/tours", content);
+
+            response.EnsureSuccessStatusCode();
+
+            return Ok(response);
         }
 
         [Authorize(Roles = "author, tourist")]
@@ -127,10 +140,17 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
 
         [Authorize(Roles = "author, tourist")]
         [HttpGet("{tourId:long}")]
-        public ActionResult<PagedResult<TourResponseDto>> GetById(long tourId)
+        public async Task<ActionResult<PagedResult<TourResponseDto>>> GetById(long tourId)
         {
-            var result = _tourService.GetById(tourId);
-            return CreateResponse(result);
+            var response = await _sharedClient.GetFromJsonAsync<List<TourResponseDto>>("tours/" + tourId);
+            
+            if (response != null)
+            {
+                var pagedResult = new PagedResult<TourResponseDto>(response, response.Count);
+                return Ok(pagedResult);
+            }
+
+            return BadRequest();
         }
 
         [Authorize(Roles = "author")]
