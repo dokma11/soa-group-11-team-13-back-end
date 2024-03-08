@@ -3,6 +3,7 @@ using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Administration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace Explorer.API.Controllers.Author
 {
@@ -17,11 +18,21 @@ namespace Explorer.API.Controllers.Author
             _equipmentService = equipmentService;
         }
 
-        [HttpGet]
-        public ActionResult<PagedResult<EquipmentResponseDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
+        private static readonly HttpClient _sharedClient = new()
         {
-            var result = _equipmentService.GetPaged(page, pageSize);
-            return CreateResponse(result);
+            BaseAddress = new Uri("http://localhost:8081/"),
+        };
+
+        [HttpGet]
+        public async Task<ActionResult<PagedResult<EquipmentResponseDto>>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
+        {
+            using HttpResponseMessage response = await _sharedClient.GetAsync("equipment");
+            response.EnsureSuccessStatusCode();
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            var data = JsonConvert.DeserializeObject<PagedResult<TourResponseDto>>(jsonResponse);
+
+            return Ok(data);
         }
     }
 }
