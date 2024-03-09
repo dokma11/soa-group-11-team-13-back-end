@@ -78,7 +78,7 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
             string json = JsonConvert.SerializeObject(tour);
             StringContent content = new(json, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _sharedClient.PostAsync("/tours", content);
+            HttpResponseMessage response = await _sharedClient.PostAsync("tours", content);
 
             response.EnsureSuccessStatusCode();
 
@@ -107,35 +107,56 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
 
         [Authorize(Roles = "author, tourist")]
         [HttpGet("equipment/{tourId:int}")]
-        public ActionResult GetEquipment(int tourId)
+        public async Task<ActionResult> GetEquipment(int tourId)
         {
-            var result = _tourService.GetEquipment(tourId);
+            //var result = _tourService.GetEquipment(tourId);
+
+            var response = await _sharedClient.GetFromJsonAsync<List<EquipmentResponseDto>>("tours/" + tourId + "/equipment");
+            //response.EnsureSuccessStatusCode();
+
+            //var jsonResponse = await response.Content.ReadAsStringAsync();
+            //var data = JsonConvert.DeserializeObject<PagedResult<EquipmentResponseDto>>(jsonResponse);
 
             // za go dodati http
+            if (response != null)
+            {
+                var pagedResult = new PagedResult<EquipmentResponseDto>(response, response.Count);
+                return Ok(pagedResult);
+            }
 
-            return CreateResponse(result);
+            return BadRequest();
+            //return CreateResponse(result);
         }
 
         [Authorize(Roles = "author, tourist")]
         [HttpPost("equipment/{tourId:int}/{equipmentId:int}")]
-        public ActionResult AddEquipment(int tourId, int equipmentId)
+        public async Task<ActionResult> AddEquipment(int tourId, int equipmentId)
         {
-            var result = _tourService.AddEquipment(tourId, equipmentId);
+            //var result = _tourService.AddEquipment(tourId, equipmentId);
 
             // za go dodati http
 
-            return CreateResponse(result);
+            HttpResponseMessage response = await _sharedClient.PostAsync("tours/" + tourId + "/equipment/" + equipmentId, null);
+
+            response.EnsureSuccessStatusCode();
+
+            return Ok(response);
+            //return CreateResponse(result);
         }
 
         [Authorize(Roles = "author, tourist")]
         [HttpDelete("equipment/{tourId:int}/{equipmentId:int}")]
-        public ActionResult DeleteEquipment(int tourId, int equipmentId)
+        public async Task<ActionResult> DeleteEquipment(int tourId, int equipmentId)
         {
-            var result = _tourService.DeleteEquipment(tourId, equipmentId);
+            //var result = _tourService.DeleteEquipment(tourId, equipmentId);
 
             // za go dodati http
+            HttpResponseMessage response = await _sharedClient.DeleteAsync("tours/" + tourId + "/equipment/" + equipmentId);
 
-            return CreateResponse(result);
+            response.EnsureSuccessStatusCode();
+
+            return Ok(response);
+            //return CreateResponse(result);
         }
 
         [Authorize(Roles = "author, tourist")]

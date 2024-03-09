@@ -1,8 +1,11 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.Core.Domain.Tours;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace Explorer.API.Controllers.Administrator.Administration
 {
@@ -17,6 +20,11 @@ namespace Explorer.API.Controllers.Administrator.Administration
             _equipmentService = equipmentService;
         }
 
+        private static readonly HttpClient _sharedClient = new()
+        {
+            BaseAddress = new Uri("http://localhost:8081/"),
+        };
+
         [HttpGet]
         public ActionResult<PagedResult<EquipmentResponseDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
         {
@@ -25,10 +33,20 @@ namespace Explorer.API.Controllers.Administrator.Administration
         }
 
         [HttpPost]
-        public ActionResult<EquipmentResponseDto> Create([FromBody] EquipmentCreateDto equipment)
+        public async Task<ActionResult<EquipmentResponseDto>> Create([FromBody] EquipmentCreateDto equipment)
         {
-            var result = _equipmentService.Create(equipment);
-            return CreateResponse(result);
+            //var result = _equipmentService.Create(equipment);
+            //return CreateResponse(result);
+
+            string json = JsonConvert.SerializeObject(equipment);
+            StringContent content = new(json, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await _sharedClient.PostAsync("equipment", content);
+
+            response.EnsureSuccessStatusCode();
+
+            return Ok(response);
+
         }
 
         [HttpPut("{id:long}")]

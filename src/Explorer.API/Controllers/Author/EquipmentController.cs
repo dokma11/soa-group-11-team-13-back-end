@@ -26,13 +26,19 @@ namespace Explorer.API.Controllers.Author
         [HttpGet]
         public async Task<ActionResult<PagedResult<EquipmentResponseDto>>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
         {
-            using HttpResponseMessage response = await _sharedClient.GetAsync("equipment");
-            response.EnsureSuccessStatusCode();
+            var response = await _sharedClient.GetFromJsonAsync<List<EquipmentResponseDto>>("equipment");
+            //response.EnsureSuccessStatusCode();
 
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<PagedResult<TourResponseDto>>(jsonResponse);
+            //var jsonResponse = await response.Content.ReadAsStringAsync();
+            //var data = JsonConvert.DeserializeObject<PagedResult<EquipmentResponseDto>>(jsonResponse);
 
-            return Ok(data);
+            if (response != null)
+            {
+                var pagedResult = new PagedResult<EquipmentResponseDto>(response, response.Count);
+                return Ok(pagedResult);
+            }
+
+            return BadRequest();
         }
     }
 }
