@@ -1,6 +1,7 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
+using Explorer.Tours.Core.Domain.Tours;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -86,15 +87,14 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
 
         [Authorize(Roles = "author, tourist")]
         [HttpPut("{id:int}")]
-        public ActionResult<TourResponseDto> Update([FromBody] TourUpdateDto tour)
+        public async Task<ActionResult<TourResponseDto>> Update([FromBody] TourUpdateDto tour)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null && identity.IsAuthenticated)
-            {
-                tour.AuthorId = long.Parse(identity.FindFirst("id").Value);
-            }
-            var result = _tourService.Update(tour);
-            return CreateResponse(result);
+            string json = JsonConvert.SerializeObject(tour);
+            StringContent content = new(json, Encoding.UTF8, "application/json");
+
+            var response = await _sharedClient.PutAsync("tours", content);
+            response.EnsureSuccessStatusCode();
+            return Ok(response);
         }
 
         [Authorize(Roles = "author, tourist")]
@@ -143,7 +143,7 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
         public async Task<ActionResult<PagedResult<TourResponseDto>>> GetById(long tourId)
         {
             var response = await _sharedClient.GetFromJsonAsync<List<TourResponseDto>>("tours/" + tourId);
-            
+
             if (response != null)
             {
                 var pagedResult = new PagedResult<TourResponseDto>(response, response.Count);
@@ -155,16 +155,24 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
 
         [Authorize(Roles = "author")]
         [HttpPut("publish/{id:int}")]
-        public ActionResult<TourResponseDto> Publish(long id)
+        public async Task<ActionResult<TourResponseDto>> Publish(long id)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            long authorId = -1;
-            if (identity != null && identity.IsAuthenticated)
-            {
-                authorId = long.Parse(identity.FindFirst("id").Value);
-            }
-            var result = _tourService.Publish(id, authorId);
-            return CreateResponse(result);
+            var response = await _sharedClient.PutAsync("tours/publish/" + id, null);
+            response.EnsureSuccessStatusCode();
+            return Ok(response);
+        }
+
+
+        [Authorize(Roles = "author, tourist")]
+        [HttpPut("durations/{id:int}")]
+        public async Task<ActionResult<TourResponseDto>> AddDurations([FromBody] TourUpdateDto tour)
+        {
+            string json = JsonConvert.SerializeObject(tour);
+            StringContent content = new(json, Encoding.UTF8, "application/json");
+
+            var response = await _sharedClient.PutAsync("tours/durations", content);
+            response.EnsureSuccessStatusCode();
+            return Ok(response);
         }
 
         [Authorize(Roles = "author")]
