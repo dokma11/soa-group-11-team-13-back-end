@@ -177,16 +177,11 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
 
         [Authorize(Roles = "author")]
         [HttpPut("archive/{id:int}")]
-        public ActionResult<TourResponseDto> Archive(long id)
+        public async Task<ActionResult<TourResponseDto>> Archive(long id)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            long authorId = -1;
-            if (identity != null && identity.IsAuthenticated)
-            {
-                authorId = long.Parse(identity.FindFirst("id").Value);
-            }
-            var result = _tourService.Archive(id, authorId);
-            return CreateResponse(result);
+            var response = await _sharedClient.PutAsync("tours/archive/" + id, null);
+            response.EnsureSuccessStatusCode();
+            return Ok(response);
         }
 
         [Authorize(Roles = "tourist")]
