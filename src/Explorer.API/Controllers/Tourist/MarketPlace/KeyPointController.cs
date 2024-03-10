@@ -1,7 +1,5 @@
-﻿using Explorer.BuildingBlocks.Core.UseCases;
-using Explorer.Tours.API.Dtos;
+﻿using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.TourAuthoring;
-using Explorer.Tours.Core.Domain.Tours;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,9 +24,19 @@ namespace Explorer.API.Controllers.Tourist.MarketPlace
         [HttpGet("tours/{tourId:long}/key-points")]
         public async Task<ActionResult<KeyPointResponseDto>> GetKeyPoints(long tourId)
         {
-            var response = await _sharedClient.GetFromJsonAsync<List<KeyPointResponseDto>>("keyPoints/tour/" + tourId);
-
-            return Ok(response);
+            try
+            {
+                var response = await _sharedClient.GetFromJsonAsync<List<KeyPointResponseDto>>("keyPoints/tour/" + tourId);
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [Authorize(Roles = "tourist")]

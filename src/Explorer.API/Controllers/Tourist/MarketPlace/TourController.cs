@@ -2,7 +2,6 @@
 using Explorer.Payments.API.Public;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
-using FluentResults;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -28,10 +27,17 @@ namespace Explorer.API.Controllers.Tourist.MarketPlace
 
         [Authorize(Roles = "author, tourist")]
         [HttpGet("tours/published")]
-        public ActionResult<PagedResult<LimitedTourViewResponseDto>> GetPublishedTours([FromQuery] int page, [FromQuery] int pageSize)
+        public async Task<ActionResult<PagedResult<TourResponseDto>>> GetPublishedTours([FromQuery] int page, [FromQuery] int pageSize)
         {
-            var result = _tourService.GetPublishedLimitedView(page, pageSize);
-            return CreateResponse(result);
+            var response = await _sharedClient.GetFromJsonAsync<List<TourResponseDto>>("tours/published");
+
+            if (response != null)
+            {
+                var pagedResult = new PagedResult<TourResponseDto>(response, response.Count);
+                return Ok(pagedResult);
+            }
+
+            return BadRequest();
         }
 
         [HttpGet("tours/{tourId:long}")]

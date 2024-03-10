@@ -1,7 +1,6 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
-using Explorer.Tours.Core.Domain.Tours;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -30,21 +29,39 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
         [HttpGet]
         public async Task<ActionResult<PagedResult<TourResponseDto>>> GetAll()
         {
-            using HttpResponseMessage response = await _sharedClient.GetAsync("tours");
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                using HttpResponseMessage response = await _sharedClient.GetAsync("tours");
+                response.EnsureSuccessStatusCode();
 
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<PagedResult<TourResponseDto>>(jsonResponse);
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var data = JsonConvert.DeserializeObject<PagedResult<TourResponseDto>>(jsonResponse);
 
-            return Ok(data);
+                return Ok(data);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [Authorize(Roles = "author")]
         [HttpGet("published")]
-        public ActionResult<PagedResult<TourResponseDto>> GetPublished([FromQuery] int page, [FromQuery] int pageSize)
+        public async Task<ActionResult<PagedResult<TourResponseDto>>> GetPublished([FromQuery] int page, [FromQuery] int pageSize)
         {
-            var result = _tourService.GetPublished(page, pageSize);
-            return CreateResponse(result);
+            var response = await _sharedClient.GetFromJsonAsync<List<TourResponseDto>>("tours/published");
+
+            if (response != null)
+            {
+                var pagedResult = new PagedResult<TourResponseDto>(response, response.Count);
+                return Ok(pagedResult);
+            }
+
+            return BadRequest();
         }
 
         [Authorize(Roles = "author, tourist")]
@@ -69,6 +86,11 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
         [HttpPost]
         public async Task<ActionResult<TourResponseDto>> Create([FromBody] TourCreateDto tour)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity != null && identity.IsAuthenticated)
             {
@@ -78,23 +100,49 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
             string json = JsonConvert.SerializeObject(tour);
             StringContent content = new(json, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _sharedClient.PostAsync("tours", content);
-
-            response.EnsureSuccessStatusCode();
-
-            return Ok(response);
+            try
+            {
+                
+                HttpResponseMessage response = await _sharedClient.PostAsync("tours", content);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [Authorize(Roles = "author, tourist")]
         [HttpPut("{id:int}")]
         public async Task<ActionResult<TourResponseDto>> Update([FromBody] TourUpdateDto tour)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             string json = JsonConvert.SerializeObject(tour);
             StringContent content = new(json, Encoding.UTF8, "application/json");
 
-            var response = await _sharedClient.PutAsync("tours", content);
-            response.EnsureSuccessStatusCode();
-            return Ok(response);
+            try
+            {
+                var response = await _sharedClient.PutAsync("tours", content);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [Authorize(Roles = "author, tourist")]
@@ -109,15 +157,8 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
         [HttpGet("equipment/{tourId:int}")]
         public async Task<ActionResult> GetEquipment(int tourId)
         {
-            //var result = _tourService.GetEquipment(tourId);
-
             var response = await _sharedClient.GetFromJsonAsync<List<EquipmentResponseDto>>("tours/" + tourId + "/equipment");
-            //response.EnsureSuccessStatusCode();
 
-            //var jsonResponse = await response.Content.ReadAsStringAsync();
-            //var data = JsonConvert.DeserializeObject<PagedResult<EquipmentResponseDto>>(jsonResponse);
-
-            // za go dodati http
             if (response != null)
             {
                 var pagedResult = new PagedResult<EquipmentResponseDto>(response, response.Count);
@@ -125,38 +166,46 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
             }
 
             return BadRequest();
-            //return CreateResponse(result);
         }
 
         [Authorize(Roles = "author, tourist")]
         [HttpPost("equipment/{tourId:int}/{equipmentId:int}")]
         public async Task<ActionResult> AddEquipment(int tourId, int equipmentId)
         {
-            //var result = _tourService.AddEquipment(tourId, equipmentId);
-
-            // za go dodati http
-
-            HttpResponseMessage response = await _sharedClient.PostAsync("tours/" + tourId + "/equipment/" + equipmentId, null);
-
-            response.EnsureSuccessStatusCode();
-
-            return Ok(response);
-            //return CreateResponse(result);
+            try
+            {
+                HttpResponseMessage response = await _sharedClient.PostAsync("tours/" + tourId + "/equipment/" + equipmentId, null);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [Authorize(Roles = "author, tourist")]
         [HttpDelete("equipment/{tourId:int}/{equipmentId:int}")]
         public async Task<ActionResult> DeleteEquipment(int tourId, int equipmentId)
         {
-            //var result = _tourService.DeleteEquipment(tourId, equipmentId);
-
-            // za go dodati http
-            HttpResponseMessage response = await _sharedClient.DeleteAsync("tours/" + tourId + "/equipment/" + equipmentId);
-
-            response.EnsureSuccessStatusCode();
-
-            return Ok(response);
-            //return CreateResponse(result);
+            try
+            {
+                HttpResponseMessage response = await _sharedClient.DeleteAsync("tours/" + tourId + "/equipment/" + equipmentId);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [Authorize(Roles = "author, tourist")]
@@ -178,9 +227,20 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
         [HttpPut("publish/{id:int}")]
         public async Task<ActionResult<TourResponseDto>> Publish(long id)
         {
-            var response = await _sharedClient.PutAsync("tours/publish/" + id, null);
-            response.EnsureSuccessStatusCode();
-            return Ok(response);
+            try
+            {
+                var response = await _sharedClient.PutAsync("tours/publish/" + id, null);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
 
@@ -188,21 +248,48 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
         [HttpPut("durations/{id:int}")]
         public async Task<ActionResult<TourResponseDto>> AddDurations([FromBody] TourUpdateDto tour)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             string json = JsonConvert.SerializeObject(tour);
             StringContent content = new(json, Encoding.UTF8, "application/json");
 
-            var response = await _sharedClient.PutAsync("tours/durations", content);
-            response.EnsureSuccessStatusCode();
-            return Ok(response);
+            try
+            { 
+                var response = await _sharedClient.PutAsync("tours/durations", content);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [Authorize(Roles = "author")]
         [HttpPut("archive/{id:int}")]
         public async Task<ActionResult<TourResponseDto>> Archive(long id)
         {
-            var response = await _sharedClient.PutAsync("tours/archive/" + id, null);
-            response.EnsureSuccessStatusCode();
-            return Ok(response);
+            try
+            {
+                var response = await _sharedClient.PutAsync("tours/archive/" + id, null);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [Authorize(Roles = "tourist")]

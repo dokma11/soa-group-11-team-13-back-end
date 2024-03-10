@@ -1,14 +1,9 @@
-﻿using Explorer.Payments.API.Dtos; //MENJANO
-using Explorer.Payments.API.Public; //MENJANO
-using System.Security.Claims;
+﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Tours.API.Dtos;
+using Explorer.Tours.API.Public;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Explorer.BuildingBlocks.Core.UseCases;
-using Explorer.Tours.API.Public;
-using Explorer.Tours.API.Dtos;
-using Explorer.Tours.Core.UseCases;
-using System.Globalization;
-using Explorer.Stakeholders.Core.Domain;
+using System.Security.Claims;
 
 namespace Explorer.API.Controllers.Tourist
 {
@@ -17,22 +12,30 @@ namespace Explorer.API.Controllers.Tourist
     public class TourRecommendersController : BaseApiController
     {
         private readonly IToursRecommendersService _tourRecommendersService;
+
         public TourRecommendersController(IToursRecommendersService tourRecommendersService)
         {
             _tourRecommendersService = tourRecommendersService;
         }
+
+        private static readonly HttpClient _sharedClient = new()
+        {
+            BaseAddress = new Uri("http://localhost:8081/"),
+        };
+
         [Route("activetours")]
         [HttpGet]
-        public ActionResult<PagedResult<TourResponseDto>> getActiveTours()
+        public async Task<ActionResult<PagedResult<TourResponseDto>>> GetActiveTours()
         {
-            long id = 0;
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null && identity.IsAuthenticated)
+            var response = await _sharedClient.GetFromJsonAsync<List<TourResponseDto>>("tours/published");
+
+            if (response != null)
             {
-                id = long.Parse(identity.FindFirst("id").Value);
+                var pagedResult = new PagedResult<TourResponseDto>(response, response.Count);
+                return Ok(pagedResult);
             }
-            var result = _tourRecommendersService.GetActiveTours(id);
-            return CreateResponse(result);
+
+            return BadRequest();
         }
         [Route("recommendedtours")]
         [HttpGet]
