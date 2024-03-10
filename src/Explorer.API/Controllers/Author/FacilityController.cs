@@ -1,9 +1,10 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Security.Claims;
+using System.Text;
 
 namespace Explorer.API.Controllers.Author
 {
@@ -11,61 +12,121 @@ namespace Explorer.API.Controllers.Author
     [Route("api/facility")]
     public class FacilityController : BaseApiController
     {
-        private readonly IFacilityService _facilityService;
-
-        public FacilityController(IFacilityService facilityService)
+        private static readonly HttpClient _sharedClient = new()
         {
-            _facilityService = facilityService;
-        }
+            BaseAddress = new Uri("http://localhost:8081/"),
+        };
 
         [HttpGet]
-        public ActionResult<PagedResult<FacilityResponseDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
+        public async Task<ActionResult<PagedResult<FacilityResponseDto>>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
         {
-            var result = _facilityService.GetPaged(page, pageSize);
-            return CreateResponse(result);
+            var response = await _sharedClient.GetFromJsonAsync<List<FacilityResponseDto>>("facilities");
+
+            if (response != null)
+            {
+                var pagedResult = new PagedResult<FacilityResponseDto>(response, response.Count);
+                return Ok(pagedResult);
+            }
+
+            return BadRequest();
         }
 
         [HttpGet("authorsFacilities")]
-        public ActionResult<PagedResult<FacilityResponseDto>> GetByAuthorId([FromQuery] int page, [FromQuery] int pageSize)
+        public async Task<ActionResult<PagedResult<FacilityResponseDto>>> GetByAuthorId([FromQuery] int page, [FromQuery] int pageSize)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var loggedInAuthorId = int.Parse(identity.FindFirst("id").Value);
-            var result = _facilityService.GetPagedByAuthorId(page, pageSize, loggedInAuthorId);
-            return CreateResponse(result);
+            var loggedInAuthor = int.Parse(identity.FindFirst("id").Value);
+
+            var response = await _sharedClient.GetFromJsonAsync<List<FacilityResponseDto>>("facilities/author/" + loggedInAuthor);
+
+            if (response != null)
+            {
+                var pagedResult = new PagedResult<FacilityResponseDto>(response, response.Count);
+                return Ok(pagedResult);
+            }
+
+            return BadRequest();
         }
 
         [HttpPost]
-        public ActionResult<FacilityResponseDto> Create([FromBody] FacilityCreateDto facility)
+        public async Task<ActionResult<FacilityResponseDto>> Create([FromBody] FacilityCreateDto facility)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity != null && identity.IsAuthenticated)
             {
                 facility.AuthorId = int.Parse(identity.FindFirst("id").Value);
             }
 
-            var result = _facilityService.Create(facility);
+            try
+            {
+                string json = JsonConvert.SerializeObject(facility);
+                StringContent content = new(json, Encoding.UTF8, "application/json");
 
-            return CreateResponse(result);
+                HttpResponseMessage response = await _sharedClient.PostAsync("facilities", content);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult<FacilityResponseDto> Update([FromBody] FacilityUpdateDto facility)
+        public async Task<ActionResult<FacilityResponseDto>> Update(int id, [FromBody] FacilityUpdateDto facility)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null && identity.IsAuthenticated)
+            if (!ModelState.IsValid)
             {
-                facility.AuthorId = int.Parse(identity.FindFirst("id").Value);
+                return BadRequest(ModelState);
             }
 
-            var result = _facilityService.Update(facility);
-            return CreateResponse(result);
+            facility.Id = id;
+
+            try
+            {
+                string json = JsonConvert.SerializeObject(facility);
+                StringContent content = new(json, Encoding.UTF8, "application/json");
+
+                var response = await _sharedClient.PutAsync("facilities/", content);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            var result = _facilityService.Delete(id);
-            return CreateResponse(result);
+            try
+            {
+                var response = await _sharedClient.DeleteAsync("facilities/" + id);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
     }
 }
