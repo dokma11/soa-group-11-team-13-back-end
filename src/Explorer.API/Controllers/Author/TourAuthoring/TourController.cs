@@ -126,6 +126,12 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
                 return BadRequest(ModelState);
             }
 
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity != null && identity.IsAuthenticated)
+            {
+                tour.AuthorId = int.Parse(identity.FindFirst("id").Value);
+            }
+
             string json = JsonConvert.SerializeObject(tour);
             StringContent content = new(json, Encoding.UTF8, "application/json");
 
@@ -147,10 +153,24 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
 
         [Authorize(Roles = "author, tourist")]
         [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            var result = _tourService.DeleteCascade(id);
-            return CreateResponse(result);
+            /*var result = _tourService.DeleteCascade(id);
+            return CreateResponse(result);*/
+            try
+            {
+                HttpResponseMessage response = await _sharedClient.DeleteAsync("tours/" + id);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [Authorize(Roles = "author, tourist")]
