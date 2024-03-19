@@ -2,10 +2,12 @@
 using Explorer.Blog.API.Public;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Public;
+using Explorer.Tours.API.Dtos;
 using FluentResults;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Newtonsoft.Json;
 
 namespace Explorer.API.Controllers
 {
@@ -17,13 +19,14 @@ namespace Explorer.API.Controllers
         private readonly IClubMemberManagementService _clubMemberManagmentService;
         private readonly IClubService _clubService;
 
+        private static readonly HttpClient _sharedClient = new HttpClient() { BaseAddress = new Uri("http://localhost:8082/") };
+
         public BlogController(IBlogService authenticationService, IClubMemberManagementService clubMemberManagmentService, IClubService clubService)
         {
             _blogService = authenticationService;
             _clubMemberManagmentService = clubMemberManagmentService;
             _clubService = clubService;
         }
-
 
         [Authorize(Policy = "userPolicy")]
         [HttpPost("create")]
@@ -53,17 +56,55 @@ namespace Explorer.API.Controllers
         }
 
         [HttpGet]
-        public ActionResult<PagedResult<BlogResponseDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
+        public async Task<ActionResult<PagedResult<BlogResponseDto>>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
         {
-            var result = _blogService.GetAll(page, pageSize);
-            return CreateResponse(result);
+            try
+            {
+                using HttpResponseMessage response = await _sharedClient.GetAsync("blogs");
+                response.EnsureSuccessStatusCode();
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var data = JsonConvert.DeserializeObject<List<BlogResponseDto>>(jsonResponse);
+                var pagedResult = new PagedResult<BlogResponseDto>(data!, data!.Count);
+
+                return Ok(pagedResult);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [HttpGet("{id:long}")]
-        public ActionResult<BlogResponseDto> Get(long id)
+        public async Task<ActionResult<BlogResponseDto>> Get(long id)
         {
-            var result = _blogService.GetById(id);
-            return CreateResponse(result);
+            //var result = _blogService.GetById(id);
+            //return CreateResponse(result);
+            try
+            {
+                using HttpResponseMessage response = await _sharedClient.GetAsync("blogs/" + id.ToString());
+
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return NotFound();
+
+                response.EnsureSuccessStatusCode();
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var data = JsonConvert.DeserializeObject<BlogResponseDto>(jsonResponse);
+
+                return Ok(data);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [HttpPut("{id:int}")]
@@ -101,14 +142,14 @@ namespace Explorer.API.Controllers
         public ActionResult<BlogResponseDto> CreateClubBlog([FromBody] BlogCreateDto blog)
         {
             blog.AuthorId = int.Parse(HttpContext.User.Claims.First(i => i.Type.Equals("id", StringComparison.OrdinalIgnoreCase)).Value);
-            if(blog.ClubId == null)
+            if (blog.ClubId == null)
             {
                 return BadRequest();
             }
             bool touristInClub = false;
-            foreach(int touristId in _clubMemberManagmentService.GetMembers((long)blog.ClubId).Value.Results.Select(member => member.UserId))
+            foreach (int touristId in _clubMemberManagmentService.GetMembers((long)blog.ClubId).Value.Results.Select(member => member.UserId))
             {
-                if(touristId == blog.AuthorId)
+                if (touristId == blog.AuthorId)
                 {
                     touristInClub = true;
                     break;
@@ -116,7 +157,7 @@ namespace Explorer.API.Controllers
             }
             if (!touristInClub)
             {
-                if(_clubService.GetById((int)blog.ClubId).Value.OwnerId != blog.AuthorId)
+                if (_clubService.GetById((int)blog.ClubId).Value.OwnerId != blog.AuthorId)
                 {
                     return BadRequest();
                 }
