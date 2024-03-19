@@ -3,11 +3,13 @@ using Explorer.Blog.API.Public;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
+using Explorer.Tours.Core.Domain;
 using FluentResults;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Newtonsoft.Json;
+using System.Text;
 
 namespace Explorer.API.Controllers
 {
@@ -30,12 +32,55 @@ namespace Explorer.API.Controllers
 
         [Authorize(Policy = "userPolicy")]
         [HttpPost("create")]
-        public ActionResult<BlogResponseDto> Create([FromBody] BlogCreateDto blog)
+        public async Task<ActionResult<BlogResponseDto>> Create([FromBody] BlogCreateDto blog)
         {
-            blog.Date = DateTime.UtcNow;
-            blog.AuthorId = int.Parse(HttpContext.User.Claims.First(i => i.Type.Equals("id", StringComparison.OrdinalIgnoreCase)).Value);
-            var result = _blogService.Create(blog);
-            return CreateResponse(result);
+            try
+            {
+                blog.Date = DateTime.UtcNow;
+                blog.AuthorId = int.Parse(HttpContext.User.Claims.First(i => i.Type.Equals("id", StringComparison.OrdinalIgnoreCase)).Value);
+                string json = JsonConvert.SerializeObject(blog);
+                StringContent content = new(json, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = await _sharedClient.PostAsync("blogs", content);
+                response.EnsureSuccessStatusCode();
+                _blogService.Create(blog);
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+            }
+
+        [HttpGet("search/{name}")]
+        public async Task<ActionResult<List<BlogResponseDto>>> SearchByName(string name)
+        {
+            try
+            {
+                using HttpResponseMessage response = await _sharedClient.GetAsync("blogs/search/" + name);
+                response.EnsureSuccessStatusCode();
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var data = JsonConvert.DeserializeObject<List<BlogResponseDto>>(jsonResponse);
+
+                if (data != null)
+                {
+                    return Ok(data);
+                }
+                return new List<BlogResponseDto>();
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [Authorize(Policy = "userPolicy")]
