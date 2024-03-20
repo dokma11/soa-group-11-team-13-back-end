@@ -7,6 +7,7 @@ using FluentResults;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace Explorer.API.Controllers
@@ -277,7 +278,6 @@ namespace Explorer.API.Controllers
             }
         }
 
-
         [Authorize(Policy = "touristPolicy")]
         [HttpGet("recommendations/notifications")]
         public async Task<ActionResult<List<BlogRecommendationNotificationDto>>> GetBlogRecommendationNotifications()
@@ -316,7 +316,33 @@ namespace Explorer.API.Controllers
             {
                 return StatusCode(500, "Internal Server Error");
             }
-        } 
-    }
+        }
 
+        [Authorize(Policy = "touristPolicy")]
+        [HttpPatch("publish/{id:long}")]
+        public async Task<ActionResult> PublishBlog(long id)
+        {
+            try
+            {
+                using HttpResponseMessage response = await _sharedClient.PatchAsync("blogs/publish/" + id.ToString(), new StringContent(""));
+
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return NotFound();
+
+                response.EnsureSuccessStatusCode();
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var data = JsonConvert.DeserializeObject<BlogResponseDto>(jsonResponse);
+
+                return Ok(data);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+    }
 }
