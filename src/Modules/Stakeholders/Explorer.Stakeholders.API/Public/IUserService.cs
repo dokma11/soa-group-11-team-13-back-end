@@ -11,5 +11,7 @@ namespace Explorer.Stakeholders.API.Public
         Result<PagedResult<UserResponseDto>> GetPagedByAdmin(int page, int pageSize, long adminId);
         Result<UserResponseDto> UpdateProfilePicture(long userId, string profilePicture);
         Result<PagedResult<UserResponseDto>> SearchUsers(int page, int pageSize, string searchUserName, long id);
+        Result<string> GetNameById(long userId);
+        Result<UserResponseDto> GetByUsername(string username);
     }
 }

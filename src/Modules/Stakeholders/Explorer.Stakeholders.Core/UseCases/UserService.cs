@@ -80,5 +80,10 @@ namespace Explorer.Stakeholders.Core.UseCases
                 return Result.Fail(FailureCode.InvalidArgument).WithError(e.Message);
             }
         }
+
+        public Result<UserResponseDto> GetByUsername(string username)
+        {
+            return MapToDto <UserResponseDto>(_userRepository.GetByUsername(username));
+        }
     }
 }

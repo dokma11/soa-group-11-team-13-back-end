@@ -1,13 +1,11 @@
 ﻿using Explorer.Blog.API.Dtos;
 using Explorer.Blog.API.Public;
+using Explorer.Blog.Core.Domain;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Public;
-using Explorer.Tours.API.Dtos;
-using Explorer.Tours.Core.Domain;
 using FluentResults;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Newtonsoft.Json;
 using System.Text;
 
@@ -20,14 +18,16 @@ namespace Explorer.API.Controllers
         private readonly IBlogService _blogService;
         private readonly IClubMemberManagementService _clubMemberManagmentService;
         private readonly IClubService _clubService;
+        private readonly IUserService _userService;
 
         private static readonly HttpClient _sharedClient = new HttpClient() { BaseAddress = new Uri("http://localhost:8082/") };
 
-        public BlogController(IBlogService authenticationService, IClubMemberManagementService clubMemberManagmentService, IClubService clubService)
+        public BlogController(IBlogService authenticationService, IClubMemberManagementService clubMemberManagmentService, IClubService clubService, IUserService userService)
         {
             _blogService = authenticationService;
             _clubMemberManagmentService = clubMemberManagmentService;
             _clubService = clubService;
+            _userService = userService;
         }
 
         [Authorize(Policy = "userPolicy")]
@@ -54,7 +54,7 @@ namespace Explorer.API.Controllers
             {
                 return StatusCode(500, "Internal Server Error");
             }
-            }
+        }
 
         [HttpGet("search/{name}")]
         public async Task<ActionResult<List<BlogResponseDto>>> SearchByName(string name)
@@ -167,7 +167,7 @@ namespace Explorer.API.Controllers
             if (_blogService.IsBlogClosed(id)) return CreateResponse(Result.Fail(FailureCode.InvalidArgument));
 
             var userId = long.Parse(HttpContext.User.Claims.First(i => i.Type.Equals("id", StringComparison.OrdinalIgnoreCase)).Value);
-            var result = _blogService.SetVote(id, userId, VoteType.UPVOTE);
+            var result = _blogService.SetVote(id, userId, Blog.API.Dtos.VoteType.UPVOTE);
             return CreateResponse(result);
         }
 
@@ -178,7 +178,7 @@ namespace Explorer.API.Controllers
             if (_blogService.IsBlogClosed(id)) return CreateResponse(Result.Fail(FailureCode.InvalidArgument));
 
             var userId = long.Parse(HttpContext.User.Claims.First(i => i.Type.Equals("id", StringComparison.OrdinalIgnoreCase)).Value);
-            var result = _blogService.SetVote(id, userId, VoteType.DOWNVOTE);
+            var result = _blogService.SetVote(id, userId, Blog.API.Dtos.VoteType.DOWNVOTE);
             return CreateResponse(result);
         }
 
@@ -219,7 +219,104 @@ namespace Explorer.API.Controllers
             var result = _blogService.GetAllFromBlogs(page, pageSize, clubId);
             return CreateResponse(result);
         }
+
+        //[Authorize(Policy = "touristPolicy")]
+        [HttpPost("recommendations")]
+        public async Task<ActionResult<BlogRecommendationResponseDto>> RecommendBlog([FromBody] BlogRecommendationRequestDto request)
+        {
+            try
+            {
+                var recommenderId = int.Parse(HttpContext.User.Claims.First(i => i.Type.Equals("id", StringComparison.OrdinalIgnoreCase)).Value);
+                var receiverId = this._userService.GetByUsername(request.RecommendationReceiverUsername).Value.Id;
+                var blogRecommendationMicroserviceRequest = new BlogRecommendationMicorserviceRequestDto() { BlogId = request.BlogId, RecommendationReceiverId = receiverId, RecommenderId = recommenderId };
+                string json = JsonConvert.SerializeObject(blogRecommendationMicroserviceRequest);
+                StringContent content = new(json, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = await _sharedClient.PostAsync("blog-recommendations", content);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (NullReferenceException)
+            {
+                return NotFound();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+        [Authorize(Policy = "touristPolicy")]
+        [HttpGet("recommendations/{id:long}")]
+        public async Task<ActionResult<BlogRecommendationResponseDto>> GetBlogRecommendationById(long id)
+        {
+            try
+            {
+                using HttpResponseMessage response = await _sharedClient.GetAsync("blog-recommendations/" + id.ToString());
+
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return NotFound();
+
+                response.EnsureSuccessStatusCode();
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var data = JsonConvert.DeserializeObject<BlogRecommendationResponseDto>(jsonResponse);
+
+                return Ok(data);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+
+        [Authorize(Policy = "touristPolicy")]
+        [HttpGet("recommendations/notifications")]
+        public async Task<ActionResult<List<BlogRecommendationNotificationDto>>> GetBlogRecommendationNotifications()
+        {
+            try
+            {
+                var loggedInUserId = int.Parse(HttpContext.User.Claims.First(i => i.Type.Equals("id", StringComparison.OrdinalIgnoreCase)).Value);
+                using HttpResponseMessage response = await _sharedClient.GetAsync("blog-recommendations/by-receiver/" + loggedInUserId.ToString());
+
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return NotFound();
+
+                response.EnsureSuccessStatusCode();
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var data = JsonConvert.DeserializeObject<List<BlogRecommendationResponseDto>>(jsonResponse);
+
+                var notifications = new List<BlogRecommendationNotificationDto>();
+
+                if (data == null) return NotFound();
+
+                foreach (var blogRecommendation in data)
+                {
+                    var receiverUsername = _userService.GetNameById(blogRecommendation.RecommenderId).Value;
+                    var description = "You have received a recommendation for blog '" + blogRecommendation.Blog.Title + "' from " + receiverUsername + ".";
+                    var notification = new BlogRecommendationNotificationDto() { Description = description };
+                    notifications.Add(notification);
+                }
+
+                return Ok(notifications);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        } 
     }
 
 }
-
