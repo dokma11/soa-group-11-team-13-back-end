@@ -318,7 +318,6 @@ namespace Explorer.API.Controllers
             }
         }
 
-        [Authorize(Policy = "touristPolicy")]
         [HttpPatch("publish/{id:long}")]
         public async Task<ActionResult> PublishBlog(long id)
         {
