@@ -21,7 +21,7 @@ namespace Explorer.API.Controllers
         private readonly IClubService _clubService;
         private readonly IUserService _userService;
 
-        private static readonly HttpClient _sharedClient = new HttpClient() { BaseAddress = new Uri("http://localhost:8082/") };
+        private static readonly HttpClient _sharedClient = new HttpClient() { BaseAddress = new Uri("http://blogs:8082/") };
 
         public BlogController(IBlogService authenticationService, IClubMemberManagementService clubMemberManagmentService, IClubService clubService, IUserService userService)
         {
