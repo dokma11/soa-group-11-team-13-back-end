@@ -38,9 +38,9 @@ ENV TOURS_TARGET_PROJECT=Explorer.Tours.Infrastructure
 
 ENV BLOG_TARGET_PROJECT=Explorer.Blog.Infrastructure
 
-ENV ENCOUNTERS_TARGET_PROJECT=Explorer.Blog.Infrastructure
+ENV ENCOUNTERS_TARGET_PROJECT=Explorer.Encounters.Infrastructure
 
-ENV PAYMENTS_TARGET_PROJECT=Explorer.Blog.Infrastructure
+ENV PAYMENTS_TARGET_PROJECT=Explorer.Payments.Infrastructure
 
 CMD PATH="$PATH:/root/.dotnet/tools" \
     \
@@ -82,7 +82,7 @@ CMD PATH="$PATH:/root/.dotnet/tools" \
         -p "Modules/Encounters/${ENCOUNTERS_TARGET_PROJECT}/${ENCOUNTERS_TARGET_PROJECT}.csproj" \
         -c "EncountersContext" \
         --configuration Release && \
-    dotnet-ef database update "${MIGRATION}-blog" \
+    dotnet-ef database update "${MIGRATION}-encounters" \
         -s "${STARTUP_PROJECT}/${STARTUP_PROJECT}.csproj" \
         -p "Modules/Encounters/${ENCOUNTERS_TARGET_PROJECT}/${ENCOUNTERS_TARGET_PROJECT}.csproj" \
         -c "EncountersContext" \
@@ -90,11 +90,11 @@ CMD PATH="$PATH:/root/.dotnet/tools" \
     \
     dotnet-ef migrations add "${MIGRATION}-payments" \
         -s "${STARTUP_PROJECT}/${STARTUP_PROJECT}.csproj" \
-        -p "Modules/Payments/${BLOG_TARGET_PROJECT}/${BLOG_TARGET_PROJECT}.csproj" \
-        -c "PaymentsContext" \
-        --configuration Release && \
-    dotnet-ef database update "${MIGRATION}-blog" \
-        -s "${STARTUP_PROJECT}/${STARTUP_PROJECT}.csproj" \
         -p "Modules/Payments/${PAYMENTS_TARGET_PROJECT}/${PAYMENTS_TARGET_PROJECT}.csproj" \
         -c "PaymentsContext" \
         --configuration Release && \
+    dotnet-ef database update "${MIGRATION}-payments" \
+        -s "${STARTUP_PROJECT}/${STARTUP_PROJECT}.csproj" \
+        -p "Modules/Payments/${PAYMENTS_TARGET_PROJECT}/${PAYMENTS_TARGET_PROJECT}.csproj" \
+        -c "PaymentsContext" \
+        --configuration Release

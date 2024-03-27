@@ -36,8 +36,8 @@ services:
         source: database-data
         target: /var/lib/postgresql/data
       - type: bind
-        source: ./explorer-init-data.sql
-        target: /tmp/explorer-init.sql
+        source: ./src/Resources/data.sql
+        target: /tmp/data.sql
     ports:
       - "5432:5432"
 
