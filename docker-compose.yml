@@ -12,7 +12,7 @@ services:
     networks:
       - database
     ports:
-      - "8080:80"
+      - "8083:80"
     environment:
       DATABASE_HOST: database
       DATABASE_PORT: 5432
@@ -39,7 +39,7 @@ services:
         source: ./src/Resources/data.sql
         target: /tmp/data.sql
     ports:
-      - "5432:5432"
+      - "5435:5432"
 
 volumes:
   database-data:
