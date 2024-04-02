@@ -14,7 +14,7 @@ namespace Explorer.API.Controllers.Author
     {
         private static readonly HttpClient _sharedClient = new()
         {
-            BaseAddress = new Uri("http://localhost:8081/"),
+            BaseAddress = new Uri("http://tours:8081/"),
         };
 
         [HttpGet]
