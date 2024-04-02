@@ -17,7 +17,7 @@ namespace Explorer.API.Controllers.Tourist.MarketPlace
 
         private static readonly HttpClient _sharedClient = new()
         {
-            BaseAddress = new Uri("http://localhost:8081/"),
+            BaseAddress = new Uri("http://tours:8081/"),
         };
 
         [Authorize(Roles = "author, tourist")]
