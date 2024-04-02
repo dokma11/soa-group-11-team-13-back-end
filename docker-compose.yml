@@ -21,6 +21,10 @@ services:
       DATABASE_SCHEMA: explorer-v1
     depends_on:
       - database
+    volumes:
+      - type: volume
+        source: images
+        target: /app/publish/wwwroot/images
 
   database:
     image: postgres
@@ -44,6 +48,8 @@ services:
 volumes:
   database-data:
     name: explorer
+  images:
+    name: images 
 
 networks:
   database:
