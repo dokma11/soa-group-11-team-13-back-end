@@ -32,15 +32,15 @@ namespace Explorer.API.Controllers
         [HttpGet("followers/{id:long}")]
         public async Task<ActionResult<PagedResult<FollowerResponseWithUserDto>>> GetFollowers([FromQuery] int page, [FromQuery] int pageSize, long id)
         {
-           /* long userId = id;
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null && identity.IsAuthenticated)
-            {
-                userId = long.Parse(identity.FindFirst("id").Value);
-            }
-            var result = _followerService.GetFollowers(page, pageSize, userId);
-            return CreateResponse(result);*/
-
+            /* long userId = id;
+             var identity = HttpContext.User.Identity as ClaimsIdentity;
+             if (identity != null && identity.IsAuthenticated)
+             {
+                 userId = long.Parse(identity.FindFirst("id").Value);
+             }
+             var result = _followerService.GetFollowers(page, pageSize, userId);
+             return CreateResponse(result);*/
+            Console.WriteLine("USAO U BEK ZA GET FOLLOWERS");
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var userId = long.Parse(identity.FindFirst("id").Value);
 
@@ -87,6 +87,7 @@ namespace Explorer.API.Controllers
         {
             /*var result = _followerService.Delete(id);
             return CreateResponse(result);*/
+            ///OVO ISPARAVI I NA FRONTU I BEKU
              try
             {
                 HttpResponseMessage response = await _sharedClient.DeleteAsync("users/unfollow/" + id);
@@ -110,6 +111,7 @@ namespace Explorer.API.Controllers
         {
             /*var result = _followerService.Create(follower);
             return CreateResponse(result);*/
+            //ovo ispravi i na beku i na frontu
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -120,8 +122,8 @@ namespace Explorer.API.Controllers
 
             try
             {
-                
-                HttpResponseMessage response = await _sharedClient.PostAsync("tours", content);
+
+                HttpResponseMessage response = await _sharedClient.PostAsync("users/follow/" + follower.FollowedById + "/" + follower.UserId, null);
                 response.EnsureSuccessStatusCode();
                 return Ok(response);
             }
