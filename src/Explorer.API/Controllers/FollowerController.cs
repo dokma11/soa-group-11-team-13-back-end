@@ -6,7 +6,9 @@ using Explorer.Stakeholders.Core.UseCases;
 using FluentResults;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Security.Claims;
+using System.Text;
 
 namespace Explorer.API.Controllers
 {
@@ -40,9 +42,9 @@ namespace Explorer.API.Controllers
             return CreateResponse(result);*/
 
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var id = long.Parse(identity.FindFirst("id").Value);
+            var userId = long.Parse(identity.FindFirst("id").Value);
 
-            var response = await _sharedClient.GetFromJsonAsync<List<FollowerResponseWithUserDto>>("users/followers/" + id);
+            var response = await _sharedClient.GetFromJsonAsync<List<FollowerResponseWithUserDto>>("users/followers/" + userId);
 
             if (response != null)
             {
@@ -65,9 +67,9 @@ namespace Explorer.API.Controllers
             return CreateResponse(result);*/
 
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var id = long.Parse(identity.FindFirst("id").Value);
+            var userId = long.Parse(identity.FindFirst("id").Value);
 
-            var response = await _sharedClient.GetFromJsonAsync<List<FollowingResponseWithUserDto>>("users/followings/" + id);
+            var response = await _sharedClient.GetFromJsonAsync<List<FollowingResponseWithUserDto>>("users/followings/" + userId);
 
             if (response != null)
             {
