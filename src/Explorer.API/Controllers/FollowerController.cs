@@ -22,56 +22,144 @@ namespace Explorer.API.Controllers
             _userService = userService;
         }
 
-        [HttpGet("followers/{id:long}")]
-        public ActionResult<PagedResult<FollowerResponseWithUserDto>> GetFollowers([FromQuery] int page, [FromQuery] int pageSize, long id)
+        private static readonly HttpClient _sharedClient = new()
         {
-            long userId = id;
+            BaseAddress = new Uri("http://followers:8084/"),
+        };
+
+        [HttpGet("followers/{id:long}")]
+        public async Task<ActionResult<PagedResult<FollowerResponseWithUserDto>>> GetFollowers([FromQuery] int page, [FromQuery] int pageSize, long id)
+        {
+           /* long userId = id;
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity != null && identity.IsAuthenticated)
             {
                 userId = long.Parse(identity.FindFirst("id").Value);
             }
             var result = _followerService.GetFollowers(page, pageSize, userId);
-            return CreateResponse(result);
+            return CreateResponse(result);*/
+
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var id = long.Parse(identity.FindFirst("id").Value);
+
+            var response = await _sharedClient.GetFromJsonAsync<List<FollowerResponseWithUserDto>>("users/followers/" + id);
+
+            if (response != null)
+            {
+                var pagedResult = new PagedResult<FollowerResponseWithUserDto>(response, response.Count);
+                return Ok(pagedResult);
+            }
+
+            return BadRequest();
         }
         [HttpGet("followings/{id:long}")]
-        public ActionResult<PagedResult<FollowingResponseWithUserDto>> GetFollowings([FromQuery] int page, [FromQuery] int pageSize, long id)
+        public async Task<ActionResult<PagedResult<FollowingResponseWithUserDto>>> GetFollowings([FromQuery] int page, [FromQuery] int pageSize, long id)
         {
-            long userId = id;
+            /*long userId = id;
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity != null && identity.IsAuthenticated)
             {
                 userId = long.Parse(identity.FindFirst("id").Value);
             }
             var result = _followerService.GetFollowings(page, pageSize, userId);
-            return CreateResponse(result);
+            return CreateResponse(result);*/
+
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var id = long.Parse(identity.FindFirst("id").Value);
+
+            var response = await _sharedClient.GetFromJsonAsync<List<FollowingResponseWithUserDto>>("users/followings/" + id);
+
+            if (response != null)
+            {
+                var pagedResult = new PagedResult<FollowingResponseWithUserDto>(response, response.Count);
+                return Ok(pagedResult);
+            }
+
+            return BadRequest();
+
+
         }
 
         [HttpDelete("{id:long}")]
-        public ActionResult Delete(long id)
+        public async Task<ActionResult> Delete(long id)
         {
-            var result = _followerService.Delete(id);
-            return CreateResponse(result);
+            /*var result = _followerService.Delete(id);
+            return CreateResponse(result);*/
+             try
+            {
+                HttpResponseMessage response = await _sharedClient.DeleteAsync("users/unfollow/" + id);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+
+
         }
 
         [HttpPost]
-        public ActionResult<FollowerResponseDto> Create([FromBody] FollowerCreateDto follower)
+        public async Task<ActionResult<FollowerResponseDto>> Create([FromBody] FollowerCreateDto follower)
         {
-            var result = _followerService.Create(follower);
-            return CreateResponse(result);
+            /*var result = _followerService.Create(follower);
+            return CreateResponse(result);*/
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            string json = JsonConvert.SerializeObject(follower);
+            StringContent content = new(json, Encoding.UTF8, "application/json");
+
+            try
+            {
+                
+                HttpResponseMessage response = await _sharedClient.PostAsync("tours", content);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+
+
         }
 
         [HttpGet("search/{searchUsername}")]
-        public ActionResult<PagedResult<UserResponseDto>> GetSearch([FromQuery] int page, [FromQuery] int pageSize, string searchUsername)
+        public async Task<ActionResult<PagedResult<UserResponseDto>>> GetSearch([FromQuery] int page, [FromQuery] int pageSize, string searchUsername)
         {
-            long userId = 0;
+            /*ong userId = 0;
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity != null && identity.IsAuthenticated)
             {
                 userId = long.Parse(identity.FindFirst("id").Value);
             }
             var result = _userService.SearchUsers(0, 0, searchUsername, userId);
-            return CreateResponse(result);
+            return CreateResponse(result);*/
+
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var id = long.Parse(identity.FindFirst("id").Value);
+
+            var response = await _sharedClient.GetFromJsonAsync<List<UserResponseDto>>("users/" + searchUsername);
+
+            if (response != null)
+            {
+                var pagedResult = new PagedResult<UserResponseDto>(response, response.Count);
+                return Ok(pagedResult);
+            }
+
+            return BadRequest();
+
         }
     }
 

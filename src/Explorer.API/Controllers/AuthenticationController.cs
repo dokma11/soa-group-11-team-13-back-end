@@ -23,15 +23,41 @@ public class AuthenticationController : BaseApiController
         _walletService = walletService;
     }
 
+
+    private static readonly HttpClient _sharedClient = new()
+    {
+        BaseAddress = new Uri("http://followers:8084/"),
+    };
+    
     [HttpPost]
-    public ActionResult<RegistrationConfirmationTokenDto> RegisterTourist([FromBody] AccountRegistrationDto account)
+    public async Task<ActionResult<RegistrationConfirmationTokenDto>> RegisterTourist([FromBody] AccountRegistrationDto account)
     {
         var result = _authenticationService.RegisterTourist(account);
         if(result.IsSuccess && !result.IsFailed)
         {
             _walletService.Create(new Payments.API.Dtos.WalletCreateDto(result.Value.Id));
         }
-        return CreateResponse(result);
+        //return CreateResponse(result);
+
+        string json = JsonConvert.SerializeObject(account);
+        StringContent content = new(json, Encoding.UTF8, "application/json");
+
+        try
+        {
+                
+            HttpResponseMessage response = await _sharedClient.PostAsync("users", content);
+            response.EnsureSuccessStatusCode();
+            return Ok(response);
+        }
+        catch (HttpRequestException)
+        {
+            return BadRequest();
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "Internal Server Error");
+        }
+        
     }
 
     [HttpPost("login")]
