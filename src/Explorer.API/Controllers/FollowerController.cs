@@ -1,9 +1,7 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
-using Explorer.Stakeholders.Core.Domain;
-using Explorer.Stakeholders.Core.UseCases;
-using FluentResults;
+using Explorer.Tours.API.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -26,71 +24,53 @@ namespace Explorer.API.Controllers
 
         private static readonly HttpClient _sharedClient = new()
         {
-            BaseAddress = new Uri("http://followers:8084/"),
+            BaseAddress = new Uri("http://host.docker.internal:8084/"),
         };
 
         [HttpGet("followers/{id:long}")]
         public async Task<ActionResult<PagedResult<FollowerResponseWithUserDto>>> GetFollowers([FromQuery] int page, [FromQuery] int pageSize, long id)
         {
-            /* long userId = id;
-             var identity = HttpContext.User.Identity as ClaimsIdentity;
-             if (identity != null && identity.IsAuthenticated)
-             {
-                 userId = long.Parse(identity.FindFirst("id").Value);
-             }
-             var result = _followerService.GetFollowers(page, pageSize, userId);
-             return CreateResponse(result);*/
-            Console.WriteLine("USAO U BEK ZA GET FOLLOWERS");
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var userId = long.Parse(identity.FindFirst("id").Value);
 
-            var response = await _sharedClient.GetFromJsonAsync<List<FollowerResponseWithUserDto>>("users/followers/" + userId);
+            var response = await _sharedClient.GetFromJsonAsync<List<FollowUserResponseDto>>("users/followers/" + userId);
 
             if (response != null)
             {
-                var pagedResult = new PagedResult<FollowerResponseWithUserDto>(response, response.Count);
+                var pagedResult = new PagedResult<FollowUserResponseDto>(response, response.Count);
                 return Ok(pagedResult);
             }
 
             return BadRequest();
         }
+
         [HttpGet("followings/{id:long}")]
         public async Task<ActionResult<PagedResult<FollowingResponseWithUserDto>>> GetFollowings([FromQuery] int page, [FromQuery] int pageSize, long id)
         {
-            /*long userId = id;
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null && identity.IsAuthenticated)
-            {
-                userId = long.Parse(identity.FindFirst("id").Value);
-            }
-            var result = _followerService.GetFollowings(page, pageSize, userId);
-            return CreateResponse(result);*/
-
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var userId = long.Parse(identity.FindFirst("id").Value);
 
-            var response = await _sharedClient.GetFromJsonAsync<List<FollowingResponseWithUserDto>>("users/followings/" + userId);
+            var response = await _sharedClient.GetFromJsonAsync<List<FollowUserResponseDto>>("users/followings/" + userId);
 
             if (response != null)
             {
-                var pagedResult = new PagedResult<FollowingResponseWithUserDto>(response, response.Count);
+                var pagedResult = new PagedResult<FollowUserResponseDto>(response, response.Count);
                 return Ok(pagedResult);
             }
 
             return BadRequest();
-
 
         }
 
         [HttpDelete("{id:long}")]
         public async Task<ActionResult> Delete(long id)
         {
-            /*var result = _followerService.Delete(id);
-            return CreateResponse(result);*/
-            ///OVO ISPARAVI I NA FRONTU I BEKU
-             try
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var userId = long.Parse(identity.FindFirst("id").Value);
+
+            try
             {
-                HttpResponseMessage response = await _sharedClient.DeleteAsync("users/unfollow/" + id);
+                HttpResponseMessage response = await _sharedClient.DeleteAsync("users/unfollow/" + userId + "/" + id);
                 response.EnsureSuccessStatusCode();
                 return Ok(response);
             }
@@ -103,15 +83,11 @@ namespace Explorer.API.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
 
-
         }
 
         [HttpPost]
         public async Task<ActionResult<FollowerResponseDto>> Create([FromBody] FollowerCreateDto follower)
         {
-            /*var result = _followerService.Create(follower);
-            return CreateResponse(result);*/
-            //ovo ispravi i na beku i na frontu
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -123,7 +99,7 @@ namespace Explorer.API.Controllers
             try
             {
 
-                HttpResponseMessage response = await _sharedClient.PostAsync("users/follow/" + follower.FollowedById + "/" + follower.UserId, null);
+                HttpResponseMessage response = await _sharedClient.PostAsync("users/follow/" + follower.UserId + "/" + follower.FollowedById, null);
                 response.EnsureSuccessStatusCode();
                 return Ok(response);
             }
@@ -136,34 +112,20 @@ namespace Explorer.API.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
 
-
         }
 
+
         [HttpGet("search/{searchUsername}")]
-        public async Task<ActionResult<PagedResult<UserResponseDto>>> GetSearch([FromQuery] int page, [FromQuery] int pageSize, string searchUsername)
+        public async Task<ActionResult<FollowUserResponseDto>> GetByUsername(string searchUsername)
         {
-            /*ong userId = 0;
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null && identity.IsAuthenticated)
+            var user = await _sharedClient.GetFromJsonAsync<FollowUserResponseDto>("users/" + searchUsername);
+
+            if (user != null)
             {
-                userId = long.Parse(identity.FindFirst("id").Value);
-            }
-            var result = _userService.SearchUsers(0, 0, searchUsername, userId);
-            return CreateResponse(result);*/
-
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var id = long.Parse(identity.FindFirst("id").Value);
-
-            var response = await _sharedClient.GetFromJsonAsync<List<UserResponseDto>>("users/" + searchUsername);
-
-            if (response != null)
-            {
-                var pagedResult = new PagedResult<UserResponseDto>(response, response.Count);
-                return Ok(pagedResult);
+                return user;
             }
 
-            return BadRequest();
-
+            return NotFound();         
         }
     }
 
