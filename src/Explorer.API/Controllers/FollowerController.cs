@@ -24,7 +24,7 @@ namespace Explorer.API.Controllers
 
         private static readonly HttpClient _sharedClient = new()
         {
-            BaseAddress = new Uri("http://host.docker.internal:8084/"),
+            BaseAddress = new Uri("http://followers:8084/"),
         };
 
         [HttpGet("followers/{id:long}")]
