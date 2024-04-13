@@ -93,12 +93,26 @@ namespace Explorer.API.Controllers
             return CreateResponse(result);
         }
 
-        [Authorize(Policy = "userPolicy")]
-        [HttpDelete("delete/{id:long}")]
-        public ActionResult<BlogResponseDto> Delete(int id)
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> Delete(int id)
         {
-            var result = _blogService.Delete(id);
-            return CreateResponse(result);
+            //var result = _blogService.Delete(id);
+            //return CreateResponse(result);
+
+            try
+            {
+                HttpResponseMessage response = await _sharedClient.DeleteAsync("blogs/" + id);
+                response.EnsureSuccessStatusCode();
+                return Ok(response);
+            }
+            catch (HttpRequestException)
+            {
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [HttpGet]
