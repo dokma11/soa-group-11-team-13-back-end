@@ -1,6 +1,7 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
+using Explorer.Stakeholders.Core.Domain;
 using Explorer.Tours.API.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +29,7 @@ namespace Explorer.API.Controllers
         };
 
         [HttpGet("followers/{id:long}")]
-        public async Task<ActionResult<PagedResult<FollowerResponseWithUserDto>>> GetFollowers([FromQuery] int page, [FromQuery] int pageSize, long id)
+        public async Task<ActionResult<PagedResult<FollowUserResponseDto>>> GetFollowers([FromQuery] int page, [FromQuery] int pageSize, long id)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var userId = long.Parse(identity.FindFirst("id").Value);
@@ -45,7 +46,7 @@ namespace Explorer.API.Controllers
         }
 
         [HttpGet("followings/{id:long}")]
-        public async Task<ActionResult<PagedResult<FollowingResponseWithUserDto>>> GetFollowings([FromQuery] int page, [FromQuery] int pageSize, long id)
+        public async Task<ActionResult<PagedResult<FollowUserResponseDto>>> GetFollowings([FromQuery] int page, [FromQuery] int pageSize, long id)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var userId = long.Parse(identity.FindFirst("id").Value);
@@ -86,7 +87,7 @@ namespace Explorer.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<FollowerResponseDto>> Create([FromBody] FollowerCreateDto follower)
+        public async Task<ActionResult<FollowUserResponseDto>> Create([FromBody] FollowerCreateDto follower)
         {
             if (!ModelState.IsValid)
             {
@@ -127,6 +128,24 @@ namespace Explorer.API.Controllers
 
             return NotFound();         
         }
+
+        [HttpGet("recommended")]
+        public async Task<ActionResult<PagedResult<FollowUserResponseDto>>> GetRecommended()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var userId = long.Parse(identity.FindFirst("id").Value);
+
+            var response = await _sharedClient.GetFromJsonAsync<List<FollowUserResponseDto>>("users/recommended/" + userId);
+
+            if (response != null)
+            {
+                var pagedResult = new PagedResult<FollowUserResponseDto>(response, response.Count);
+                return Ok(pagedResult);
+            }
+
+            return BadRequest();
+        }
+
     }
 
 }
