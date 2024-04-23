@@ -48,10 +48,10 @@ namespace Explorer.API.Controllers
         [HttpGet("followings/{id:long}")]
         public async Task<ActionResult<PagedResult<FollowUserResponseDto>>> GetFollowings([FromQuery] int page, [FromQuery] int pageSize, long id)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var userId = long.Parse(identity.FindFirst("id").Value);
+            //var identity = HttpContext.User.Identity as ClaimsIdentity;
+            //var userId = long.Parse(identity.FindFirst("id").Value);
 
-            var response = await _sharedClient.GetFromJsonAsync<List<FollowUserResponseDto>>("users/followings/" + userId);
+            var response = await _sharedClient.GetFromJsonAsync<List<FollowUserResponseDto>>("users/followings/" + id);
 
             if (response != null)
             {
