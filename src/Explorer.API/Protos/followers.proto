@@ -3,7 +3,7 @@ syntax = "proto3";
 option csharp_namespace = "GrpcServiceTranscoding";
 import "Protos/google/api/annotations.proto";
 
-package Followers;
+//package followers;
 
 service FollowersService {
       rpc GetUserByUsername(GetUserByUsernameRequest) returns (GetUserByUsernameResponse) {
@@ -32,14 +32,13 @@ service FollowersService {
       
       rpc Unfollow(UnfollowRequest) returns (UnfollowResponse) {
         option (google.api.http) = {
-          delete: "/follow"
-          body: "*"
+          delete: "/unfollow"
         };
       }
       
       rpc Follow(FollowRequest) returns (FollowResponse) {
         option (google.api.http) = {
-          post: "/unfollow"
+          post: "/follow"
           body: "*"
         };
       }
