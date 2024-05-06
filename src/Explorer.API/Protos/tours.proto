@@ -1,0 +1,214 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcServiceTranscoding";
+import "Protos/google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+package Tours;
+
+service ToursService {
+  rpc GetAllTours(GetAllToursRequest) returns (GetAllToursResponse) {}
+  rpc GetPublishedTours(GetPublishedToursRequest) returns (GetPublishedToursResponse) {}
+  rpc GetTourById(GetTourByIdRequest) returns (GetTourByIdResponse) {}
+  rpc GetToursByAuthorId(GetToursByAuthorIdRequest) returns (GetToursByAuthorIdResponse) {}
+  rpc CreateTour(CreateTourRequest) returns (CreateTourResponse) {}
+  rpc UpdateTour(UpdateTourRequest) returns (UpdateTourResponse) {}
+  rpc DeleteTour(DeleteTourRequest) returns (DeleteTourResponse) {}
+  rpc PublishTour(PublishTourRequest) returns (PublishTourResponse) {}
+  rpc ArchiveTour(ArchiveTourRequest) returns (ArchiveTourResponse) {}
+  rpc AddToursDurations(AddToursDurationsRequest) returns (AddToursDurationsResponse) {}
+  rpc AddToursEquipment(AddToursEquipmentRequest) returns (AddToursEquipmentResponse) {}
+  rpc DeleteToursEquipment(DeleteToursEquipmentRequest) returns (DeleteToursEquipmentResponse) {}
+  rpc GetToursEquipment(GetToursEquipmentRequest) returns (GetToursEquipmentResponse) {}
+}
+
+message Tour {
+  int64 ID = 1;
+  int32 AuthorId = 2;
+  string Name = 3;
+  string Description = 4;
+  int32 Difficulty = 5;
+  repeated string Tags = 6;
+  enum TourStatus {
+    Draft = 0;
+    Published = 1;
+    Archived = 2;
+    Ready = 3;
+  }
+  TourStatus status = 7;
+  double Price = 8;
+  double Distance = 9;
+  google.protobuf.Timestamp PublishDate = 10;
+  google.protobuf.Timestamp ArchiveDate = 11;
+  enum TourCategory {
+    Adventure = 0;
+    FamilyTrips = 1;
+    Cruise = 2;
+    Cultural = 3;
+  }
+  TourCategory category = 12;
+  bool IsDeleted = 13;
+  repeated KeyPoint KeyPoints = 14;
+  repeated Equipment equipment = 15;
+  repeated Review Reviews = 16;
+  repeated TourDuration Durations = 17;
+}
+
+message Equipment {
+  int64 ID = 1;
+  string Name = 2;
+  string Description = 3;
+  repeated Tour Tours = 4;
+}
+
+message Facility {
+  int64 ID = 1;
+  int64 AuthorId = 2;
+  string Name = 3;
+  string Description = 4;
+  double Longitude = 5;
+  double Latitude = 6;
+  enum Category {
+    Restaurant = 0;
+    ParkingLot = 1;
+    Toilet = 2;
+    Hospital = 3;
+    Cafe = 4;
+    Pharmacy = 5;
+    ExchangeOffice = 6;
+    BusStop = 7;
+    Shop = 8;
+    Other = 9;
+  };
+  Category category = 8;
+  string ImagePath = 9;
+}
+
+message KeyPoint {
+  int64 ID = 1;
+  int64 TourId = 2;
+  string Name = 3;
+  string Description = 4;
+  double Longitude = 5;
+  double Latitude = 6;
+  string LocationAddress = 7;
+  string ImagePath = 8;
+  int64 Order = 9;
+}
+
+message TourDuration {
+  int32 Duration = 1;
+  enum TransportType {
+    Walking = 0;
+    Bicycle = 1;
+    Car = 2;
+  }
+  TransportType transportType = 2;
+}
+
+message Review {
+  int64 ID = 1;
+  int32 Rating = 2;
+  string Comment = 3;
+  int32 TouristId = 4;
+  int64 TourId = 5;
+  google.protobuf.Timestamp TourVisitDate = 6;
+  google.protobuf.Timestamp CommentDate = 7;
+  repeated string Images = 8;
+}
+
+message GetAllToursRequest {
+}
+
+message GetAllToursResponse {
+  repeated Tour tours = 1;
+}
+
+message GetPublishedToursRequest {
+}
+
+message GetPublishedToursResponse {
+  repeated Tour tours = 1;
+}
+
+message GetTourByIdRequest {
+  string ID = 1;
+}
+
+message GetTourByIdResponse {
+  Tour tour = 1;
+}
+
+message GetToursByAuthorIdRequest {
+  string AuthorId = 1;
+}
+
+message GetToursByAuthorIdResponse {
+  repeated Tour tours = 1;
+}
+
+message CreateTourRequest {
+  Tour tour = 1;
+}
+
+message CreateTourResponse {
+}
+
+message UpdateTourRequest {
+  Tour tour = 1;
+}
+
+message UpdateTourResponse {
+}
+
+message DeleteTourRequest {
+  string ID = 1;
+}
+
+message DeleteTourResponse {
+}
+
+message PublishTourRequest {
+  string ID = 1;
+}
+
+message PublishTourResponse {
+}
+
+message ArchiveTourRequest {
+  string ID = 1;
+}
+
+message ArchiveTourResponse {
+}
+
+message AddToursDurationsRequest {
+  Tour tour = 1;
+}
+
+message AddToursDurationsResponse {
+}
+
+message AddToursEquipmentRequest {
+  string tourId = 1;
+  string equipmentId = 2;
+}
+
+message AddToursEquipmentResponse {
+}
+
+message DeleteToursEquipmentRequest {
+  string tourId = 1;
+  string equipmentId = 2;
+}
+
+message DeleteToursEquipmentResponse {
+}
+
+message GetToursEquipmentRequest {
+  string tourId = 1;
+}
+
+message GetToursEquipmentResponse {
+  repeated Equipment equipment = 1;
+}
