@@ -1,0 +1,126 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcServiceTranscoding";
+import "Protos/google/api/annotations.proto";
+
+package Followers;
+
+service FollowersService {
+      rpc GetUserByUsername(GetUserByUsernameRequest) returns (GetUserByUsernameResponse) {
+        option (google.api.http) = {
+          get: "/followers/search"
+        };
+      }
+
+      rpc GetFollowers(GetFollowersRequest) returns (GetFollowersResponse) {
+        option (google.api.http) = {
+          get: "/followers"
+        };
+      }
+      
+      rpc GetFollowings(GetFollowingsRequest) returns (GetFollowingsResponse) {
+        option (google.api.http) = {
+          get: "/followings"
+        };
+      }
+      
+      rpc GetRecommendedUsers(GetRecommendedUsersRequest) returns (GetRecommendedUsersResponse) {
+        option (google.api.http) = {
+          get: "/followers/recommended"
+        };
+      }
+      
+      rpc Unfollow(UnfollowRequest) returns (UnfollowResponse) {
+        option (google.api.http) = {
+          delete: "/follow"
+          body: "*"
+        };
+      }
+      
+      rpc Follow(FollowRequest) returns (FollowResponse) {
+        option (google.api.http) = {
+          post: "/unfollow"
+          body: "*"
+        };
+      }
+      
+      rpc Create(CreateRequest) returns (CreateResponse) {
+        option (google.api.http) = {
+          post: "/"
+          body: "*"
+        };
+      }
+}
+
+message User {
+    int64 ID = 1;
+    string Username = 2;
+    string Password = 3;
+    enum Role {
+        Administrator = 0;
+        Author = 1;
+        Tourist = 2;
+    };
+    Role role = 4;
+    string ProfilePicture = 5;
+    bool IsActive = 6;
+}
+
+message Users {
+    repeated User objects = 1;
+}
+
+message GetUserByUsernameRequest {
+    string Username = 1;
+}
+
+message GetUserByUsernameResponse {
+    User user = 1;
+}
+
+message GetFollowersRequest {
+    string ID = 1;
+}
+
+message GetFollowersResponse {
+    repeated User users = 1;
+}
+
+message GetFollowingsRequest {
+    string ID = 1;
+}
+
+message GetFollowingsResponse {
+    repeated User users = 1;
+}
+
+message GetRecommendedUsersRequest {
+    string ID = 1;
+}
+
+message GetRecommendedUsersResponse {
+    repeated User users = 1;
+}
+
+message UnfollowRequest {
+    string followerId = 1;
+    string followingId = 2;
+}
+
+message UnfollowResponse {
+}
+
+message FollowRequest {
+    string followerId = 1;
+    string followingId = 2;
+}
+
+message FollowResponse {
+}
+
+message CreateRequest {
+    User user = 1;
+}
+
+message CreateResponse {
+}
