@@ -1,0 +1,155 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcServiceTranscoding";
+import "Protos/google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+package KeyPoints;
+
+service KeyPointsService {
+  rpc GetKeyPointById(GetKeyPointByIdRequest) returns (GetKeyPointByIdResponse) {}
+  rpc GetAllKeyPoints(GetAllKeyPointsRequest) returns (GetAllKeyPointsResponse) {}
+  rpc GetKeyPointsByTourId(GetKeyPointsByTourIdRequest) returns (GetKeyPointsByTourIdResponse) {}
+  rpc CreateKeyPoint(CreateKeyPointRequest) returns (CreateKeyPointResponse) {}
+  rpc UpdateKeyPoint(UpdateKeyPointRequest) returns (UpdateKeyPointResponse) {}
+  rpc DeleteKeyPoint(DeleteKeyPointRequest) returns (DeleteKeyPointResponse) {}
+}
+
+message KeyPoint {
+  int64 ID = 1;
+  int64 TourId = 2;
+  string Name = 3;
+  string Description = 4;
+  double Longitude = 5;
+  double Latitude = 6;
+  string LocationAddress = 7;
+  string ImagePath = 8;
+  int64 Order = 9;
+}
+
+message Facility {
+  int64 ID = 1;
+  int64 AuthorId = 2;
+  string Name = 3;
+  string Description = 4;
+  double Longitude = 5;
+  double Latitude = 6;
+  enum Category {
+    Restaurant = 0;
+    ParkingLot = 1;
+    Toilet = 2;
+    Hospital = 3;
+    Cafe = 4;
+    Pharmacy = 5;
+    ExchangeOffice = 6;
+    BusStop = 7;
+    Shop = 8;
+    Other = 9;
+    };
+  Category category = 8;
+  string ImagePath = 9;
+}
+
+message Equipment {
+  int64 ID = 1;
+  string Name = 2;
+  string Description = 3;
+  repeated Tour Tours = 4;
+}
+
+message Tour {
+  int64 id = 1;
+  int32 author_id = 2;
+  string name = 3;
+  string description = 4;
+  int32 difficulty = 5;
+  repeated string tags = 6;
+  enum TourStatus {
+    Draft = 0;
+    Published = 1;
+    Archived = 2;
+    Ready = 3;
+    }
+  TourStatus status = 7;
+  double price = 8;
+  double distance = 9;
+  google.protobuf.Timestamp publish_date = 10;
+  google.protobuf.Timestamp archive_date = 11;
+  enum TourCategory {
+    Adventure = 0;
+    FamilyTrips = 1;
+    Cruise = 2;
+    Cultural = 3;
+    }
+  TourCategory category = 12;
+  bool is_deleted = 13;
+  repeated KeyPoint key_points = 14;
+  repeated Equipment equipment = 15;
+  repeated Review reviews = 16;
+  repeated TourDuration durations = 17;
+}
+
+message TourDuration {
+  int32 Duration = 1;
+  enum TransportType {
+    Walking = 0;
+    Bicycle = 1;
+    Car = 2;
+  }
+  TransportType transportType = 2;
+}
+
+message Review {
+  int64 ID = 1;
+  int32 Rating = 2;
+  string Comment = 3;
+  int32 TouristId = 4;
+  int64 TourId = 5;
+  google.protobuf.Timestamp TourVisitDate = 6;
+  google.protobuf.Timestamp CommentDate = 7;
+  repeated string Images = 8;
+}
+
+message GetKeyPointByIdRequest {
+  string ID = 1;
+}
+
+message GetKeyPointByIdResponse {
+  KeyPoint keyPoint = 1;
+}
+
+message GetAllKeyPointsRequest {
+}
+
+message GetAllKeyPointsResponse {
+  repeated KeyPoint keyPoints = 1;
+}
+
+message GetKeyPointsByTourIdRequest {
+  string TourId = 1;
+}
+
+message GetKeyPointsByTourIdResponse {
+  repeated KeyPoint keyPoints = 1;
+}
+
+message CreateKeyPointRequest {
+  KeyPoint keyPoint = 1;
+}
+
+message CreateKeyPointResponse {
+}
+
+message UpdateKeyPointRequest {
+  KeyPoint keyPoint = 1;
+}
+
+message UpdateKeyPointResponse {
+}
+
+message DeleteKeyPointRequest {
+  string ID = 1;
+}
+
+message DeleteKeyPointResponse {
+}
