@@ -1,3 +1,4 @@
+using Explorer.API.Controllers;
 using Explorer.API.Startup;
 using Explorer.Tours.Core.UseCases;
 
@@ -11,6 +12,8 @@ builder.Services.ConfigureCors(corsPolicy);
 builder.Services.ConfigureAuth();
 
 builder.Services.RegisterModules();
+
+builder.Services.AddGrpc().AddJsonTranscoding();
 
 var app = builder.Build();
 
@@ -28,6 +31,7 @@ app.UseAuthorization();
 app.UseStaticFiles();
 
 app.MapControllers();
+app.MapGrpcService<FollowerController>();
 
 app.Run();
 
