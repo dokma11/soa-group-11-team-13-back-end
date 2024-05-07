@@ -1,10 +1,10 @@
 using Explorer.API.Controllers;
-using Explorer.API.Controllers.Administrator.Administration;
 using Explorer.API.Controllers.Author;
-using Explorer.API.Controllers.Author.TourAuthoring;
-using Explorer.API.Controllers.Tourist.MarketPlace;
 using Explorer.API.Startup;
 using Explorer.Tours.Core.UseCases;
+using EquipmentController = Explorer.API.Controllers.Administrator.Administration.EquipmentController;
+using KeyPointController = Explorer.API.Controllers.Author.TourAuthoring.KeyPointController;
+using TourController = Explorer.API.Controllers.Author.TourAuthoring.TourController;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +37,9 @@ app.UseStaticFiles();
 app.MapControllers();
 app.MapGrpcService<FollowerController>();
 app.MapGrpcService<FacilityController>();
+app.MapGrpcService<TourController>();
+app.MapGrpcService<KeyPointController>();
+app.MapGrpcService<EquipmentController>();
 
 
 app.Run();
