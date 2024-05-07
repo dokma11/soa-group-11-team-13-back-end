@@ -25,7 +25,7 @@ namespace Explorer.API.Controllers.Tourist.MarketPlace
             BaseAddress = new Uri("http://tours:8081/"),
         };
 
-        [Authorize(Roles = "author, tourist")]
+        /*[Authorize(Roles = "author, tourist")]
         [HttpGet("tours/published")]
         public async Task<ActionResult<PagedResult<TourResponseDto>>> GetPublishedTours([FromQuery] int page, [FromQuery] int pageSize)
         {
@@ -51,7 +51,7 @@ namespace Explorer.API.Controllers.Tourist.MarketPlace
             }
 
             return BadRequest();
-        }
+        }*/
 
         [HttpGet("tours/can-be-rated/{tourId:long}")]
         public bool CanTourBeRated(long tourId)
