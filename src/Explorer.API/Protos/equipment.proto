@@ -39,13 +39,13 @@ message EquipmentTour {
   string description = 4;
   int32 difficulty = 5;
   repeated string tags = 6;
-  enum TourStatus {
+  enum EquipmentTourStatus {
     Draft = 0;
     Published = 1;
     Archived = 2;
     Ready = 3;
   }
-  TourStatus status = 7;
+  EquipmentTourStatus status = 7;
   double price = 8;
   double distance = 9;
   google.protobuf.Timestamp publish_date = 10;

@@ -2,34 +2,33 @@ syntax = "proto3";
 
 option csharp_namespace = "GrpcServiceTranscoding";
 import "Protos/google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
 
 //package Facilities;
 
 service FacilitiesService {
-  rpc GetAll(GetAllRequest) returns (GetAllResponse) {
+  rpc GetAllFacilities(GetAllFacilitiesRequest) returns (GetAllFacilitiesResponse) {
       option (google.api.http) = {
           get: "/facility"
        };
   }
-  rpc GetByAuthorId(GetByAuthorIdRequest) returns (GetByAuthorIdResponse) {
+  rpc GetFacilitiesByAuthorId(GetFacilitiesByAuthorIdRequest) returns (GetFacilitiesByAuthorIdResponse) {
       option (google.api.http) = {
           get: "/facility/authorsFacilities"
        };
   }
-  rpc Create(CreateRequest) returns (CreateResponse) {
+  rpc CreateFacility(CreateFacilityRequest) returns (CreateFacilityResponse) {
       option (google.api.http) = {
           post: "/facility",
           body: "*"
        };
   }
-  rpc Update(UpdateRequest) returns (UpdateResponse) {
+  rpc UpdateFacility(UpdateFacilityRequest) returns (UpdateFacilityResponse) {
       option (google.api.http) = {
           put: "/facility",
           body: "*"
        };
   }
-  rpc Delete(DeleteRequest) returns (DeleteResponse) {
+  rpc DeleteFacility(DeleteFacilityRequest) returns (DeleteFacilityResponse) {
       option (google.api.http) = {
           delete: "/facility"
        };
@@ -55,42 +54,42 @@ message Facility {
     Shop = 8;
     Other = 9;
   };
-  Category category = 8;
-  string ImagePath = 9;
+  Category category = 7;
+  string ImagePath = 8;
 }
 
-message GetAllRequest {
+message GetAllFacilitiesRequest {
 }
 
-message GetAllResponse {
+message GetAllFacilitiesResponse {
   repeated Facility facilities = 1;
 }
 
-message GetByAuthorIdRequest {
+message GetFacilitiesByAuthorIdRequest {
   string AuthorId = 1;
 }
 
-message GetByAuthorIdResponse {
+message GetFacilitiesByAuthorIdResponse {
   repeated Facility facilities = 1;
 }
 
-message CreateRequest {
+message CreateFacilityRequest {
   Facility facility = 1;
 }
 
-message CreateResponse {
+message CreateFacilityResponse {
 }
 
-message UpdateRequest {
+message UpdateFacilityRequest {
   Facility facility = 1;
 }
 
-message UpdateResponse {
+message UpdateFacilityResponse {
 }
 
-message DeleteRequest {
+message DeleteFacilityRequest {
   string ID = 1;
 }
 
-message DeleteResponse {
+message DeleteFacilityResponse {
 }

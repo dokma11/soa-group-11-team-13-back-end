@@ -36,13 +36,7 @@ app.UseStaticFiles();
 
 app.MapControllers();
 app.MapGrpcService<FollowerController>();
-app.MapGrpcService<Explorer.API.Controllers.Author.TourAuthoring.TourController>();
-app.MapGrpcService<Explorer.API.Controllers.Tourist.MarketPlace.TourController>();
 app.MapGrpcService<FacilityController>();
-app.MapGrpcService<Explorer.API.Controllers.Author.EquipmentController>();
-app.MapGrpcService<Explorer.API.Controllers.Administrator.Administration.EquipmentController>();
-app.MapGrpcService<Explorer.API.Controllers.Author.TourAuthoring.KeyPointController>();
-app.MapGrpcService<Explorer.API.Controllers.Tourist.MarketPlace.KeyPointController>();
 
 
 app.Run();

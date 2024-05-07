@@ -2,7 +2,6 @@ syntax = "proto3";
 
 option csharp_namespace = "GrpcServiceTranscoding";
 import "Protos/google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
 
 //package KeyPoints;
 

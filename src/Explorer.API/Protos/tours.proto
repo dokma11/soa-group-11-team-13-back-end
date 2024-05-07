@@ -7,73 +7,73 @@ import "google/protobuf/timestamp.proto";
 //package Tours;
 
 service ToursService {
-  rpc GetAll(GetAllRequest) returns (GetAllResponse) {
+  rpc GetAllTours(GetAllToursRequest) returns (GetAllToursResponse) {
        option (google.api.http) = {
           get: "/tour/all"
        };
   }
-  rpc GetPublished(GetPublishedRequest) returns (GetPublishedResponse) {
+  rpc GetPublishedTours(GetPublishedToursRequest) returns (GetPublishedToursResponse) {
     option (google.api.http) = {
           get: "/tour/published"
     };
   }
-  rpc GetById(GetByIdRequest) returns (GetByIdResponse) {
+  rpc GetTourById(GetTourByIdRequest) returns (GetTourByIdResponse) {
     option (google.api.http) = {
           get: "/tour"
     };
   }
-  rpc GetByAuthorId(GetByAuthorIdRequest) returns (GetByAuthorIdResponse) {
+  rpc GetToursByAuthorId(GetToursByAuthorIdRequest) returns (GetToursByAuthorIdResponse) {
     option (google.api.http) = {
           get: "/tour/authors"
     };
   }
-  rpc Create(CreateRequest) returns (CreateResponse) {
+  rpc CreateTour(CreateTourRequest) returns (CreateTourResponse) {
       option (google.api.http) = {
           post: "/tour"
           body: "*"
       };
   }
-  rpc Update(UpdateRequest) returns (UpdateResponse) {
+  rpc UpdateTour(UpdateTourRequest) returns (UpdateTourResponse) {
     option (google.api.http) = {
           put: "/tour"
           body: "*"
       };
   }
-  rpc Delete(DeleteRequest) returns (DeleteResponse) {
+  rpc DeleteTour(DeleteTourRequest) returns (DeleteTourResponse) {
      option (google.api.http) = {
           delete: "/tour"
      };
   }
-  rpc Publish(PublishRequest) returns (PublishResponse) {
+  rpc PublishTour(PublishTourRequest) returns (PublishTourResponse) {
     option (google.api.http) = {
           put: "/tour/publish"
           body: "*"
      };
   }
-  rpc Archive(ArchiveRequest) returns (ArchiveResponse) {
+  rpc ArchiveTour(ArchiveTourRequest) returns (ArchiveTourResponse) {
     option (google.api.http) = {
           put: "/tour/archive"
           body: "*"
      };
   }
-  rpc AddDurations(AddDurationsRequest) returns (AddDurationsResponse) {
+  rpc AddToursDurations(AddToursDurationsRequest) returns (AddToursDurationsResponse) {
     option (google.api.http) = {
           put: "/tour/durations"
           body: "*"
      };
   }
-  rpc AddEquipment(AddEquipmentRequest) returns (AddEquipmentResponse) {
+  rpc AddToursEquipment(AddToursEquipmentRequest) returns (AddToursEquipmentResponse) {
     option (google.api.http) = {
           post: "/tour/equipment"
           body: "*"
      };
   }
-  rpc DeleteEquipment(DeleteEquipmentRequest) returns (DeleteEquipmentResponse) {
+  rpc DeleteToursEquipment(DeleteToursEquipmentRequest) returns (DeleteToursEquipmentResponse) {
     option (google.api.http) = {
           delete: "/tour/equipment"
      };
   }
-  rpc GetEquipment(GetEquipmentRequest) returns (GetEquipmentResponse) {
+  rpc GetToursEquipment(GetToursEquipmentRequest) returns (GetToursEquipmentResponse) {
      option (google.api.http) = {
           get: "/tour/equipment"
      };
@@ -175,98 +175,98 @@ message TourReview {
   repeated string Images = 8;
 }
 
-message GetAllRequest {
+message GetAllToursRequest {
 }
 
-message GetAllResponse {
+message GetAllToursResponse {
   repeated Tour tours = 1;
 }
 
-message GetPublishedRequest {
+message GetPublishedToursRequest {
 }
 
-message GetPublishedResponse {
+message GetPublishedToursResponse {
   repeated Tour tours = 1;
 }
 
-message GetByIdRequest {
+message GetTourByIdRequest {
   string ID = 1;
 }
 
-message GetByIdResponse {
+message GetTourByIdResponse {
   Tour tour = 1;
 }
 
-message GetByAuthorIdRequest {
+message GetToursByAuthorIdRequest {
   string AuthorId = 1;
 }
 
-message GetByAuthorIdResponse {
+message GetToursByAuthorIdResponse {
   repeated Tour tours = 1;
 }
 
-message CreateRequest {
+message CreateTourRequest {
   Tour tour = 1;
 }
 
-message CreateResponse {
+message CreateTourResponse {
 }
 
-message UpdateRequest {
+message UpdateTourRequest {
   Tour tour = 1;
 }
 
-message UpdateResponse {
+message UpdateTourResponse {
 }
 
-message DeleteRequest {
+message DeleteTourRequest {
   string ID = 1;
 }
 
-message DeleteResponse {
+message DeleteTourResponse {
 }
 
-message PublishRequest {
+message PublishTourRequest {
   string ID = 1;
 }
 
-message PublishResponse {
+message PublishTourResponse {
 }
 
-message ArchiveRequest {
+message ArchiveTourRequest {
   string ID = 1;
 }
 
-message ArchiveResponse {
+message ArchiveTourResponse {
 }
 
-message AddDurationsRequest {
+message AddToursDurationsRequest {
   Tour tour = 1;
 }
 
-message AddDurationsResponse {
+message AddToursDurationsResponse {
 }
 
-message AddEquipmentRequest {
+message AddToursEquipmentRequest {
   string tourId = 1;
   string equipmentId = 2;
 }
 
-message AddEquipmentResponse {
+message AddToursEquipmentResponse {
 }
 
-message DeleteEquipmentRequest {
+message DeleteToursEquipmentRequest {
   string tourId = 1;
   string equipmentId = 2;
 }
 
-message DeleteEquipmentResponse {
+message DeleteToursEquipmentResponse {
 }
 
-message GetEquipmentRequest {
+message GetToursEquipmentRequest {
   string tourId = 1;
 }
 
-message GetEquipmentResponse {
+message GetToursEquipmentResponse {
   repeated TourEquipment equipment = 1;
 }

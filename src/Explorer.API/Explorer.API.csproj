@@ -48,6 +48,11 @@
 
   <ItemGroup>
 	  <Protobuf Include="Protos\followers.proto" />
+	  <Protobuf Include="Protos\facilities.proto" />
+	  <Protobuf Include="Protos\equipment.proto" />
+	  <Protobuf Include="Protos\keypoints.proto" />
+	  <Protobuf Include="Protos\reviews.proto" />
+	  <Protobuf Include="Protos\tours.proto" />
   </ItemGroup>
 
 </Project>
