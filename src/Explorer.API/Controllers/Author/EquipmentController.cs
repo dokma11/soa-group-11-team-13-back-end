@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace Explorer.API.Controllers.Author
 {
     [Authorize(Policy = "authorPolicy")]
-    //[Route("api/author/equipment")]
+    [Route("api/author/equipment")]
     public class EquipmentController : BaseApiController
     {
         private readonly IEquipmentService _equipmentService;
