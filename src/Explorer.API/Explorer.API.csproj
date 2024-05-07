@@ -53,6 +53,10 @@
 	  <Protobuf Include="Protos\keypoints.proto" />
 	  <Protobuf Include="Protos\reviews.proto" />
 	  <Protobuf Include="Protos\tours.proto" />
+	  <Protobuf Include="Protos\comments.proto" />
+	  <Protobuf Include="Protos\blogs.proto" />
+	  <Protobuf Include="Protos\blog_recommendations.proto" />
+	  <Protobuf Include="Protos\votes.proto" />
   </ItemGroup>
 
 </Project>

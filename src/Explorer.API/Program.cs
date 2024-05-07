@@ -3,6 +3,7 @@ using Explorer.API.Controllers.Author;
 using Explorer.API.Startup;
 using Explorer.Tours.Core.UseCases;
 using EquipmentController = Explorer.API.Controllers.Administrator.Administration.EquipmentController;
+using CommentController = Explorer.API.Controllers.Tourist.CommentController;
 using KeyPointController = Explorer.API.Controllers.Author.TourAuthoring.KeyPointController;
 using TourController = Explorer.API.Controllers.Author.TourAuthoring.TourController;
 
@@ -40,6 +41,8 @@ app.MapGrpcService<FacilityController>();
 app.MapGrpcService<TourController>();
 app.MapGrpcService<KeyPointController>();
 app.MapGrpcService<EquipmentController>();
+app.MapGrpcService<CommentController>();
+app.MapGrpcService<BlogController>();
 
 
 app.Run();
