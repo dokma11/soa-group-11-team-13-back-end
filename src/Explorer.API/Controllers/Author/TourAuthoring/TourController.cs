@@ -1,318 +1,204 @@
-﻿using Explorer.BuildingBlocks.Core.UseCases;
-using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System.Security.Claims;
-using System.Text;
+﻿using Grpc.Core;
+using Grpc.Net.Client;
+using GrpcServiceTranscoding;
 
 namespace Explorer.API.Controllers.Author.TourAuthoring
 {
 
-    [Route("api/tour")]
-    public class TourController : BaseApiController
+    public class TourController : ToursService.ToursServiceBase
     {
-        private readonly ITourService _tourService;
+        private readonly ILogger<TourController> _logger;
 
-        public TourController(ITourService tourService)
+        public TourController(ILogger<TourController> logger)
         {
-            _tourService = tourService;
+            _logger = logger;
         }
 
-        private static readonly HttpClient _sharedClient = new()
+        public override async Task<GetAllToursResponse> GetAllTours(GetAllToursRequest request, ServerCallContext context)
         {
-            BaseAddress = new Uri("http://tours:8081/"),
-        };
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-        [Authorize(Roles = "author")]
-        [HttpGet]
-        public async Task<ActionResult<PagedResult<TourResponseDto>>> GetAll()
-        {
-            try
-            {
-                using HttpResponseMessage response = await _sharedClient.GetAsync("tours");
-                response.EnsureSuccessStatusCode();
+            var client = new ToursService.ToursServiceClient(channel);
+            var response = await client.GetAllToursAsync(request);
+            Console.WriteLine("GET ALL TOURS: " + response.Tours);
 
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                var data = JsonConvert.DeserializeObject<PagedResult<TourResponseDto>>(jsonResponse);
-
-                return Ok(data);
-            }
-            catch (HttpRequestException)
+            return await Task.FromResult(new GetAllToursResponse
             {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
+                Tours = { response.Tours }
+            });
         }
 
-        [Authorize(Roles = "author")]
-        [HttpGet("published")]
-        public async Task<ActionResult<PagedResult<TourResponseDto>>> GetPublished([FromQuery] int page, [FromQuery] int pageSize)
+        public override async Task<GetPublishedToursResponse> GetPublishedTours(GetPublishedToursRequest request, ServerCallContext context)
         {
-            var response = await _sharedClient.GetFromJsonAsync<List<TourResponseDto>>("tours/published");
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            if (response != null)
+            var client = new ToursService.ToursServiceClient(channel);
+            var response = await client.GetPublishedToursAsync(request);
+            Console.WriteLine("GET PUBLISHED TOURS: " + response.Tours);
+
+            return await Task.FromResult(new GetPublishedToursResponse
             {
-                var pagedResult = new PagedResult<TourResponseDto>(response, response.Count);
-                return Ok(pagedResult);
-            }
-
-            return BadRequest();
+                Tours = { response.Tours }
+            });
         }
 
-        [Authorize(Roles = "author, tourist")]
-        [HttpGet("authors")]
-        public async Task<ActionResult<PagedResult<TourResponseDto>>> GetAuthorsTours()
+        public override async Task<GetToursByAuthorIdResponse> GetToursByAuthorId(GetToursByAuthorIdRequest request, ServerCallContext context)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var id = long.Parse(identity.FindFirst("id").Value);
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            var response = await _sharedClient.GetFromJsonAsync<List<TourResponseDto>>("tours/authors/" + id);
+            var client = new ToursService.ToursServiceClient(channel);
+            var response = await client.GetToursByAuthorIdAsync(request);
+            Console.WriteLine("GET AUTHORS TOURS: " + response.Tours);
 
-            if (response != null)
+            return await Task.FromResult(new GetToursByAuthorIdResponse
             {
-                var pagedResult = new PagedResult<TourResponseDto>(response, response.Count);
-                return Ok(pagedResult);
-            }
-
-            return BadRequest();
+                Tours = { response.Tours }
+            });
         }
 
-        [Authorize(Roles = "author, tourist")]
-        [HttpPost]
-        public async Task<ActionResult<TourResponseDto>> Create([FromBody] TourCreateDto tour)
+        public override async Task<CreateTourResponse> CreateTour(CreateTourRequest request, ServerCallContext context)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null && identity.IsAuthenticated)
-            {
-                tour.AuthorId = long.Parse(identity.FindFirst("id").Value);
-            }
+            var client = new ToursService.ToursServiceClient(channel);
+            var response = await client.CreateTourAsync(request);
+            Console.WriteLine("CREATE TOUR ");
 
-            string json = JsonConvert.SerializeObject(tour);
-            StringContent content = new(json, Encoding.UTF8, "application/json");
-
-            try
-            {
-                
-                HttpResponseMessage response = await _sharedClient.PostAsync("tours", content);
-                response.EnsureSuccessStatusCode();
-                return Ok(response);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
+            return await Task.FromResult(new CreateTourResponse { });
         }
 
-        [Authorize(Roles = "author, tourist")]
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult<TourResponseDto>> Update([FromBody] TourUpdateDto tour)
+        public override async Task<UpdateTourResponse> UpdateTour(UpdateTourRequest request, ServerCallContext context)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null && identity.IsAuthenticated)
-            {
-                tour.AuthorId = int.Parse(identity.FindFirst("id").Value);
-            }
+            var client = new ToursService.ToursServiceClient(channel);
+            var response = await client.UpdateTourAsync(request);
+            Console.WriteLine("UPDATE TOUR ");
 
-            string json = JsonConvert.SerializeObject(tour);
-            StringContent content = new(json, Encoding.UTF8, "application/json");
-
-            try
-            {
-                var response = await _sharedClient.PutAsync("tours", content);
-                response.EnsureSuccessStatusCode();
-                return Ok(response);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
+            return await Task.FromResult(new UpdateTourResponse { });
         }
 
-        [Authorize(Roles = "author, tourist")]
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult> Delete(int id)
+        public override async Task<DeleteTourResponse> DeleteTour(DeleteTourRequest request, ServerCallContext context)
         {
-            /*var result = _tourService.DeleteCascade(id);
-            return CreateResponse(result);*/
-            try
-            {
-                HttpResponseMessage response = await _sharedClient.DeleteAsync("tours/" + id);
-                response.EnsureSuccessStatusCode();
-                return Ok(response);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new ToursService.ToursServiceClient(channel);
+            var response = await client.DeleteTourAsync(request);
+            Console.WriteLine("DELETE TOUR ");
+
+            return await Task.FromResult(new DeleteTourResponse { });
         }
 
-        [Authorize(Roles = "author, tourist")]
-        [HttpGet("equipment/{tourId:int}")]
-        public async Task<ActionResult> GetEquipment(int tourId)
+        public override async Task<GetToursEquipmentResponse> GetToursEquipment(GetToursEquipmentRequest request, ServerCallContext context)
         {
-            var response = await _sharedClient.GetFromJsonAsync<List<EquipmentResponseDto>>("tours/" + tourId + "/equipment");
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            if (response != null)
+            var client = new ToursService.ToursServiceClient(channel);
+            var response = await client.GetToursEquipmentAsync(request);
+            Console.WriteLine("GET TOUR EQUIPMENT: " + response.Equipment);
+
+            return await Task.FromResult(new GetToursEquipmentResponse
             {
-                var pagedResult = new PagedResult<EquipmentResponseDto>(response, response.Count);
-                return Ok(pagedResult);
-            }
-
-            return BadRequest();
+                Equipment = { response.Equipment }
+            });
         }
 
-        [Authorize(Roles = "author, tourist")]
-        [HttpPost("equipment/{tourId:int}/{equipmentId:int}")]
-        public async Task<ActionResult> AddEquipment(int tourId, int equipmentId)
+        public override async Task<AddToursEquipmentResponse> AddToursEquipment(AddToursEquipmentRequest request, ServerCallContext context)
         {
-            try
-            {
-                HttpResponseMessage response = await _sharedClient.PostAsync("tours/" + tourId + "/equipment/" + equipmentId, null);
-                response.EnsureSuccessStatusCode();
-                return Ok(response);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new ToursService.ToursServiceClient(channel);
+            var response = await client.AddToursEquipmentAsync(request);
+            Console.WriteLine("ADD EQUIPMENT ");
+
+            return await Task.FromResult(new AddToursEquipmentResponse { });
         }
 
-        [Authorize(Roles = "author, tourist")]
-        [HttpDelete("equipment/{tourId:int}/{equipmentId:int}")]
-        public async Task<ActionResult> DeleteEquipment(int tourId, int equipmentId)
+        public override async Task<DeleteToursEquipmentResponse> DeleteToursEquipment(DeleteToursEquipmentRequest request, ServerCallContext context)
         {
-            try
-            {
-                HttpResponseMessage response = await _sharedClient.DeleteAsync("tours/" + tourId + "/equipment/" + equipmentId);
-                response.EnsureSuccessStatusCode();
-                return Ok(response);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new ToursService.ToursServiceClient(channel);
+            var response = await client.DeleteToursEquipmentAsync(request);
+            Console.WriteLine("DELETE EQUIPMENT ");
+
+            return await Task.FromResult(new DeleteToursEquipmentResponse { });
         }
 
-        [Authorize(Roles = "author, tourist")]
-        [HttpGet("{tourId:long}")]
-        public async Task<ActionResult<PagedResult<TourResponseDto>>> GetById(long tourId)
+        public override async Task<GetTourByIdResponse> GetTourById(GetTourByIdRequest request, ServerCallContext context)
         {
-            var response = await _sharedClient.GetFromJsonAsync<List<TourResponseDto>>("tours/" + tourId);
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            if (response != null)
+            var client = new ToursService.ToursServiceClient(channel);
+            var response = await client.GetTourByIdAsync(request);
+            Console.WriteLine("GET TOURS BY ID: " + response.Tour);
+
+            return await Task.FromResult(new GetTourByIdResponse
             {
-                var pagedResult = new PagedResult<TourResponseDto>(response, response.Count);
-                return Ok(pagedResult);
-            }
-
-            return BadRequest();
+                Tour = response.Tour
+            });
         }
 
-        [Authorize(Roles = "author")]
-        [HttpPut("publish/{id:int}")]
-        public async Task<ActionResult<TourResponseDto>> Publish(long id)
+        public override async Task<PublishTourResponse> PublishTour(PublishTourRequest request, ServerCallContext context)
         {
-            try
-            {
-                var response = await _sharedClient.PutAsync("tours/publish/" + id, null);
-                response.EnsureSuccessStatusCode();
-                return Ok(response);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new ToursService.ToursServiceClient(channel);
+            var response = await client.PublishTourAsync(request);
+            Console.WriteLine("PUBLISH TPUR");
+
+            return await Task.FromResult(new PublishTourResponse { });
         }
 
-
-        [Authorize(Roles = "author, tourist")]
-        [HttpPut("durations/{id:int}")]
-        public async Task<ActionResult<TourResponseDto>> AddDurations([FromBody] TourUpdateDto tour)
+        public override async Task<AddToursDurationsResponse> AddToursDurations(AddToursDurationsRequest request, ServerCallContext context)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            string json = JsonConvert.SerializeObject(tour);
-            StringContent content = new(json, Encoding.UTF8, "application/json");
+            var client = new ToursService.ToursServiceClient(channel);
+            var response = await client.AddToursDurationsAsync(request);
+            Console.WriteLine("ADD TPUR DURATIon");
 
-            try
-            { 
-                var response = await _sharedClient.PutAsync("tours/durations", content);
-                response.EnsureSuccessStatusCode();
-                return Ok(response);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
+            return await Task.FromResult(new AddToursDurationsResponse { });
         }
 
-        [Authorize(Roles = "author")]
-        [HttpPut("archive/{id:int}")]
-        public async Task<ActionResult<TourResponseDto>> Archive(long id)
+        public override async Task<ArchiveTourResponse> ArchiveTour(ArchiveTourRequest request, ServerCallContext context)
         {
-            try
-            {
-                var response = await _sharedClient.PutAsync("tours/archive/" + id, null);
-                response.EnsureSuccessStatusCode();
-                return Ok(response);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new ToursService.ToursServiceClient(channel);
+            var response = await client.ArchiveTourAsync(request);
+            Console.WriteLine("PUBLISH TPUR");
+
+            return await Task.FromResult(new ArchiveTourResponse { });
         }
 
-        [Authorize(Roles = "tourist")]
+        /*[Authorize(Roles = "tourist")]
         [HttpPut("markAsReady/{id:int}")]
         public ActionResult<TourResponseDto> MarkAsReady(long id)
         {
@@ -343,6 +229,6 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
 
             var result = _tourService.GetToursBasedOnSelectedKeyPoints(page, pageSize, keyPointIdsList, authorId);
             return CreateResponse(result);
-        }
+        }*/
     }
 }
