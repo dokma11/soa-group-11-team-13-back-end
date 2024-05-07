@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcServiceTranscoding";
+import "Protos/google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+//package BlogRecommendations;
+
+service BlogRecommendationService {
+  rpc CreateBlogRecommendation(CreateBlogRecommendationRequest) returns (CreateBlogRecommendationResponse) {
+    option (google.api.http) = {
+        post: "/recommendations"
+        body: "*"
+    };
+  }
+
+  rpc GetAllBlogRecommendations(GetAllBlogRecommendationsRequest) returns (GetAllBlogRecommendationsResponse) {
+    option (google.api.http) = {
+        get: "/recommendations"
+    };
+  }
+
+  rpc GetBlogRecommendationById(GetBlogRecommendationByIdRequest) returns (GetBlogRecommendationByIdResponse) {
+    option (google.api.http) = {
+        get: "/recommendations"
+    };
+  }
+
+  rpc GetBlogRecommendationByReceiverId(GetBlogRecommendationByReceiverIdRequest) returns (GetBlogRecommendationByReceiverIdResponse) {
+    option (google.api.http) = {
+        get: "/recommendations"
+    };
+  }
+}
+
+message BlogRecommendation {
+  int32 ID = 1;
+  int32 BlogId = 2;
+  int32 RecommenderId = 3;
+  int32 RecommendationReceiverId = 4;
+  RecommenderBlog blog = 5;
+}
+
+message RecommenderBlog {
+  int32 ID = 1;
+  string Title = 2;
+  string Description = 3;
+  enum BlogStatus {
+    Draft = 0;
+    Published = 1;
+    Closed = 2;
+    Active = 3;
+    Famous = 4;
+  }
+  BlogStatus Status = 4;
+  int32 AuthorId = 5;
+  repeated RecommenderComment Comments = 6;
+  repeated RecommenderVote Votes = 7;
+  repeated BlogRecommendation Recommendations = 8;
+}
+
+message RecommenderComment {
+  int32 ID = 1;
+  int32 AuthorId = 2;
+  int32 BlogId = 3;
+  string Text = 4;
+  google.protobuf.Timestamp CreatedAt = 5;
+  google.protobuf.Timestamp UpdatedAt = 6;
+}
+
+message RecommenderVote {
+  int32 ID = 1;
+  int32 UserId = 2;
+  int32 BlogId = 3;
+  enum VoteType {
+    Downvote = 0;
+    Upvote = 1;
+  }
+  VoteType Type = 4;
+}
+
+message CreateBlogRecommendationRequest {
+  BlogRecommendation recommendation = 1;    // Proveriti samo ne znam sta su slali tacno
+}
+
+message CreateBlogRecommendationResponse {
+}
+
+message GetBlogRecommendationByIdRequest {
+  string ID = 1;
+}
+
+message GetBlogRecommendationByIdResponse {
+  BlogRecommendation recommendation = 1;
+}
+
+message GetAllBlogRecommendationsRequest {
+}
+
+message GetAllBlogRecommendationsResponse {
+  repeated BlogRecommendation recommendations = 1;
+}
+
+message GetBlogRecommendationByReceiverIdRequest {
+  int32 ReceiverId = 1;
+}
+
+message GetBlogRecommendationByReceiverIdResponse {
+  repeated BlogRecommendation recommendations = 1;
+}
