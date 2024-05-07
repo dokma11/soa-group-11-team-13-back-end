@@ -4,22 +4,35 @@ option csharp_namespace = "GrpcServiceTranscoding";
 import "Protos/google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
-package Equipment;
+//package Equipment;
 
 service EquipmentService {
-  rpc GetEquipmentById(GetEquipmentByIdRequest) returns (GetEquipmentByIdResponse) {}
-  rpc GetAllEquipment(GetAllEquipmentRequest) returns (GetAllEquipmentResponse) {}
-  rpc CreateEquipment(CreateEquipmentRequest) returns (CreateEquipmentResponse) {}
+  rpc GetById(GetByIdRequest) returns (GetByIdResponse) {
+      option (google.api.http) = {
+          get: "/tour/equipment"
+     };
+  }
+  rpc GetAll(GetAllRequest) returns (GetAllResponse) {
+       option (google.api.http) = {
+          get: "/administration/equipment"
+     };
+  }
+  rpc Create(CreateRequest) returns (CreateResponse) {
+      option (google.api.http) = {
+          post: "/administration/equipment",
+          body: "*"
+     };
+  }
 }
 
 message Equipment {
   int64 ID = 1;
   string Name = 2;
   string Description = 3;
-  repeated Tour Tours = 4;
+  repeated EquipmentTour Tours = 4;
 }
 
-message Tour {
+message EquipmentTour {
   int64 id = 1;
   int32 author_id = 2;
   string name = 3;
@@ -45,13 +58,13 @@ message Tour {
   }
   TourCategory category = 12;
   bool is_deleted = 13;
-  repeated KeyPoint key_points = 14;
+  repeated EquipmentKeyPoint key_points = 14;
   repeated Equipment equipment = 15;
-  repeated Review reviews = 16;
-  repeated TourDuration durations = 17;
+  repeated EquipmentReview reviews = 16;
+  repeated EquipmentTourDuration durations = 17;
 }
 
-message KeyPoint {
+message EquipmentKeyPoint {
   int64 ID = 1;
   int64 TourId = 2;
   string Name = 3;
@@ -63,7 +76,7 @@ message KeyPoint {
   int64 Order = 9;
 }
 
-message Facility {
+message EquipmentFacility {
   int64 ID = 1;
   int64 AuthorId = 2;
   string Name = 3;
@@ -86,7 +99,7 @@ message Facility {
   string ImagePath = 9;
 }
 
-message TourDuration {
+message EquipmentTourDuration {
   int32 Duration = 1;
   enum TransportType {
     Walking = 0;
@@ -96,7 +109,7 @@ message TourDuration {
   TransportType transportType = 2;
 }
 
-message Review {
+message EquipmentReview {
   int64 ID = 1;
   int32 Rating = 2;
   string Comment = 3;
@@ -107,24 +120,24 @@ message Review {
   repeated string Images = 8;
 }
 
-message GetEquipmentByIdRequest {
+message GetByIdRequest {
   string ID = 1;
 }
 
-message GetEquipmentByIdResponse {
+message GetByIdResponse {
   Equipment equipment = 1;
 }
 
-message GetAllEquipmentRequest {
+message GetAllRequest {
 }
 
-message GetAllEquipmentResponse {
+message GetAllResponse {
   repeated Equipment equipment = 1;
 }
 
-message CreateEquipmentRequest {
+message CreateRequest {
   Equipment equipment = 1;
 }
 
-message CreateEquipmentResponse {
+message CreateResponse {
 }

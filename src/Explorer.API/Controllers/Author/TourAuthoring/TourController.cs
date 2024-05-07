@@ -10,7 +10,7 @@ using System.Text;
 namespace Explorer.API.Controllers.Author.TourAuthoring
 {
 
-    [Route("api/tour")]
+    //[Route("api/tour")]
     public class TourController : BaseApiController
     {
         private readonly ITourService _tourService;
