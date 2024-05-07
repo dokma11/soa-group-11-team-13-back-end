@@ -2,6 +2,9 @@
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.Core.Domain.Tours;
+using Grpc.Core;
+using Grpc.Net.Client;
+using GrpcServiceTranscoding;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -9,48 +12,45 @@ using System.Text;
 
 namespace Explorer.API.Controllers.Administrator.Administration
 {
-    [Authorize(Policy = "administratorPolicy")]
-    [Route("api/administration/equipment")]
-    public class EquipmentController : BaseApiController
+    public class EquipmentController : EquipmentService.EquipmentServiceBase
     {
-        private readonly IEquipmentService _equipmentService;
+        private readonly ILogger<EquipmentController> _logger;
 
-        public EquipmentController(IEquipmentService equipmentService)
+        public EquipmentController(ILogger<EquipmentController> logger)
         {
-            _equipmentService = equipmentService;
+            _logger = logger;
         }
 
-        private static readonly HttpClient _sharedClient = new()
+        public override async Task<EquipmentGetAllResponse> GetAll(EquipmentGetAllRequest request, ServerCallContext context)
         {
-            BaseAddress = new Uri("http://tours:8081/"),
-        };
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-        [HttpGet]
-        public ActionResult<PagedResult<EquipmentResponseDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
-        {
-            var result = _equipmentService.GetPaged(page, pageSize);
-            return CreateResponse(result);
+            var client = new EquipmentService.EquipmentServiceClient(channel);
+            var response = await client.GetAllAsync(request);
+
+            return await Task.FromResult(new EquipmentGetAllResponse
+            {
+                Equipment = { response.Equipment }
+            });
         }
 
-        [HttpPost]
-        public async Task<ActionResult<EquipmentResponseDto>> Create([FromBody] EquipmentCreateDto equipment)
+
+        public override async Task<EquipmentCreateResponse> Create(EquipmentCreateRequest request, ServerCallContext context)
         {
-            //var result = _equipmentService.Create(equipment);
-            //return CreateResponse(result);
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            string json = JsonConvert.SerializeObject(equipment);
-            StringContent content = new(json, Encoding.UTF8, "application/json");
+            var client = new EquipmentService.EquipmentServiceClient(channel);
+            var response = await client.CreateAsync(request);
 
-            HttpResponseMessage response = await _sharedClient.PostAsync("equipment", content);
-
-            response.EnsureSuccessStatusCode();
-
-            return Ok(response);
+            return await Task.FromResult(new EquipmentCreateResponse {});
 
         }
 
-        [HttpPut("{id:long}")]
-        public ActionResult<EquipmentResponseDto> Update([FromBody] EquipmentUpdateDto equipment)
+        /*public ActionResult<EquipmentResponseDto> Update([FromBody] EquipmentUpdateDto equipment)
         {
             var result = _equipmentService.Update(equipment);
             return CreateResponse(result);
@@ -61,6 +61,6 @@ namespace Explorer.API.Controllers.Administrator.Administration
         {
             var result = _equipmentService.Delete(id);
             return CreateResponse(result);
-        }
+        }*/
     }
 }

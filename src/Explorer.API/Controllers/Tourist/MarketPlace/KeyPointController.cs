@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Explorer.API.Controllers.Tourist.MarketPlace
 {
-    [Route("api/market-place")]
+    //[Route("api/market-place")]
     public class KeyPointController : BaseApiController
     {
-        private readonly IKeyPointService _keyPointService;
+        /*private readonly IKeyPointService _keyPointService;
 
         public KeyPointController(IKeyPointService keyPointService)
         {
@@ -37,9 +37,9 @@ namespace Explorer.API.Controllers.Tourist.MarketPlace
             {
                 return StatusCode(500, "Internal Server Error");
             }
-        }
+        }*/
 
-        [Authorize(Roles = "tourist")]
+        /*[Authorize(Roles = "tourist")]
         [HttpGet("{campaignId:long}/key-points")]
         public ActionResult<KeyPointResponseDto> GetCampaignKeyPoints(long campaignId)
         {
@@ -53,6 +53,6 @@ namespace Explorer.API.Controllers.Tourist.MarketPlace
         {
             var result = _keyPointService.GetFirstByTourId(tourId);
             return CreateResponse(result);
-        }
+        }*/
     }
 }

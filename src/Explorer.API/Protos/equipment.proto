@@ -7,19 +7,19 @@ import "google/protobuf/timestamp.proto";
 //package Equipment;
 
 service EquipmentService {
-  rpc GetById(EquipmentGetByIdRequest) returns (EquipmentGetByIdResponse) {
+  /*rpc GetById(EquipmentGetByIdRequest) returns (EquipmentGetByIdResponse) {
       option (google.api.http) = {
           get: "/tour/equipment"
      };
-  }
+  }*/
   rpc GetAll(EquipmentGetAllRequest) returns (EquipmentGetAllResponse) {
        option (google.api.http) = {
-          get: "/administration/equipment"
+          get: "/equipment"
      };
   }
   rpc Create(EquipmentCreateRequest) returns (EquipmentCreateResponse) {
       option (google.api.http) = {
-          post: "/administration/equipment",
+          post: "/equipment",
           body: "*"
      };
   }

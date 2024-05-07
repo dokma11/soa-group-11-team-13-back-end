@@ -6,7 +6,8 @@ import "Protos/google/api/annotations.proto";
 //package KeyPoints;
 
 service KeyPointsService {
-  rpc GetById(KeyPointGetByIdRequest) returns (KeyPointGetByIdResponse) {}
+  //rpc GetById(KeyPointGetByIdRequest) returns (KeyPointGetByIdResponse) {}
+
   rpc GetAll(KeyPointGetAllRequest) returns (KeyPointGetAllResponse) {
        option (google.api.http) = {
           get: "/tour-authoring"
