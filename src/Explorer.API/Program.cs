@@ -1,4 +1,8 @@
 using Explorer.API.Controllers;
+using Explorer.API.Controllers.Administrator.Administration;
+using Explorer.API.Controllers.Author;
+using Explorer.API.Controllers.Author.TourAuthoring;
+using Explorer.API.Controllers.Tourist.MarketPlace;
 using Explorer.API.Startup;
 using Explorer.Tours.Core.UseCases;
 
@@ -32,6 +36,14 @@ app.UseStaticFiles();
 
 app.MapControllers();
 app.MapGrpcService<FollowerController>();
+app.MapGrpcService<Explorer.API.Controllers.Author.TourAuthoring.TourController>();
+app.MapGrpcService<Explorer.API.Controllers.Tourist.MarketPlace.TourController>();
+app.MapGrpcService<FacilityController>();
+app.MapGrpcService<Explorer.API.Controllers.Author.EquipmentController>();
+app.MapGrpcService<Explorer.API.Controllers.Administrator.Administration.EquipmentController>();
+app.MapGrpcService<Explorer.API.Controllers.Author.TourAuthoring.KeyPointController>();
+app.MapGrpcService<Explorer.API.Controllers.Tourist.MarketPlace.KeyPointController>();
+
 
 app.Run();
 

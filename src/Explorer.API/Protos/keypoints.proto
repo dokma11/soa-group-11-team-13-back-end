@@ -8,11 +8,33 @@ import "google/protobuf/timestamp.proto";
 
 service KeyPointsService {
   rpc GetById(GetByIdRequest) returns (GetByIdResponse) {}
-  rpc GetAll(GetAllRequest) returns (GetAllResponse) {}
-  rpc GetByTourId(GetByTourIdRequest) returns (GetByTourIdResponse) {}
-  rpc Create(CreateRequest) returns (CreateResponse) {}
-  rpc Update(UpdateRequest) returns (UpdateResponse) {}
-  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+  rpc GetAll(GetAllRequest) returns (GetAllResponse) {
+       option (google.api.http) = {
+          get: "/tour-authoring"
+       };
+  }
+  rpc GetByTourId(GetByTourIdRequest) returns (GetByTourIdResponse) {
+      option (google.api.http) = {
+          get: "/market-place/tours/key-points"
+       };
+  }
+  rpc Create(CreateRequest) returns (CreateResponse) {
+      option (google.api.http) = {
+          post: "/tour-authoring/tours/key-points",
+          body: "*"
+       };
+  }
+  rpc Update(UpdateRequest) returns (UpdateResponse) {
+      option (google.api.http) = {
+          put: "/tour-authoring/tours/key-points",
+          body: "*"
+       };
+  }
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {
+      option (google.api.http) = {
+          delete: "/tour-authoring/tours/key-points"
+       };
+  }
 }
 
 message KeyPoint {

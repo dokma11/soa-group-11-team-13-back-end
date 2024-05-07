@@ -7,11 +7,33 @@ import "google/protobuf/timestamp.proto";
 //package Facilities;
 
 service FacilitiesService {
-  rpc GetAll(GetAllRequest) returns (GetAllResponse) {}
-  rpc GetByAuthorId(GetByAuthorIdRequest) returns (GetByAuthorIdResponse) {}
-  rpc Create(CreateRequest) returns (CreateResponse) {}
-  rpc Update(UpdateRequest) returns (UpdateResponse) {}
-  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+  rpc GetAll(GetAllRequest) returns (GetAllResponse) {
+      option (google.api.http) = {
+          get: "/facility"
+       };
+  }
+  rpc GetByAuthorId(GetByAuthorIdRequest) returns (GetByAuthorIdResponse) {
+      option (google.api.http) = {
+          get: "/facility/authorsFacilities"
+       };
+  }
+  rpc Create(CreateRequest) returns (CreateResponse) {
+      option (google.api.http) = {
+          post: "/facility",
+          body: "*"
+       };
+  }
+  rpc Update(UpdateRequest) returns (UpdateResponse) {
+      option (google.api.http) = {
+          put: "/facility",
+          body: "*"
+       };
+  }
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {
+      option (google.api.http) = {
+          delete: "/facility"
+       };
+  }
 }
 
 message Facility {

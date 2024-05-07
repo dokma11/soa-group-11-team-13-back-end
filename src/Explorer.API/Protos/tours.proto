@@ -9,7 +9,7 @@ import "google/protobuf/timestamp.proto";
 service ToursService {
   rpc GetAll(GetAllRequest) returns (GetAllResponse) {
        option (google.api.http) = {
-          get: "/tour"
+          get: "/tour/all"
        };
   }
   rpc GetPublished(GetPublishedRequest) returns (GetPublishedResponse) {
