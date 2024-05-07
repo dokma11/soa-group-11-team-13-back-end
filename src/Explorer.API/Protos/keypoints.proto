@@ -7,30 +7,30 @@ import "google/protobuf/timestamp.proto";
 //package KeyPoints;
 
 service KeyPointsService {
-  rpc GetById(GetByIdRequest) returns (GetByIdResponse) {}
-  rpc GetAll(GetAllRequest) returns (GetAllResponse) {
+  rpc GetById(KeyPointGetByIdRequest) returns (KeyPointGetByIdResponse) {}
+  rpc GetAll(KeyPointGetAllRequest) returns (KeyPointGetAllResponse) {
        option (google.api.http) = {
           get: "/tour-authoring"
        };
   }
-  rpc GetByTourId(GetByTourIdRequest) returns (GetByTourIdResponse) {
+  rpc GetByTourId(KeyPointGetByTourIdRequest) returns (KeyPointGetByTourIdResponse) {
       option (google.api.http) = {
           get: "/market-place/tours/key-points"
        };
   }
-  rpc Create(CreateRequest) returns (CreateResponse) {
+  rpc Create(KeyPointCreateRequest) returns (KeyPointCreateResponse) {
       option (google.api.http) = {
           post: "/tour-authoring/tours/key-points",
           body: "*"
        };
   }
-  rpc Update(UpdateRequest) returns (UpdateResponse) {
+  rpc Update(KeyPointUpdateRequest) returns (KeyPointUpdateResponse) {
       option (google.api.http) = {
           put: "/tour-authoring/tours/key-points",
           body: "*"
        };
   }
-  rpc Delete(DeleteRequest) returns (DeleteResponse) {
+  rpc Delete(KeyPointDeleteRequest) returns (KeyPointDeleteResponse) {
       option (google.api.http) = {
           delete: "/tour-authoring/tours/key-points"
        };
@@ -49,46 +49,46 @@ message KeyPoint {
   int64 Order = 9;
 }
 
-message GetByIdRequest {
+message KeyPointGetByIdRequest {
   string ID = 1;
 }
 
-message GetByIdResponse {
+message KeyPointGetByIdResponse {
   KeyPoint keyPoint = 1;
 }
 
-message GetAllRequest {
+message KeyPointGetAllRequest {
 }
 
-message GetAllResponse {
+message KeyPointGetAllResponse {
   repeated KeyPoint keyPoints = 1;
 }
 
-message GetByTourIdRequest {
+message KeyPointGetByTourIdRequest {
   string TourId = 1;
 }
 
-message GetByTourIdResponse {
+message KeyPointGetByTourIdResponse {
   repeated KeyPoint keyPoints = 1;
 }
 
-message CreateRequest {
+message KeyPointCreateRequest {
   KeyPoint keyPoint = 1;
 }
 
-message CreateResponse {
+message KeyPointCreateResponse {
 }
 
-message UpdateRequest {
+message KeyPointUpdateRequest {
   KeyPoint keyPoint = 1;
 }
 
-message UpdateResponse {
+message KeyPointUpdateResponse {
 }
 
-message DeleteRequest {
+message KeyPointDeleteRequest {
   string ID = 1;
 }
 
-message DeleteResponse {
+message KeyPointDeleteResponse {
 }

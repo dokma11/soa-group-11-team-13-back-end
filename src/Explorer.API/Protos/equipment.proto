@@ -7,17 +7,17 @@ import "google/protobuf/timestamp.proto";
 //package Equipment;
 
 service EquipmentService {
-  rpc GetById(GetByIdRequest) returns (GetByIdResponse) {
+  rpc GetById(EquipmentGetByIdRequest) returns (EquipmentGetByIdResponse) {
       option (google.api.http) = {
           get: "/tour/equipment"
      };
   }
-  rpc GetAll(GetAllRequest) returns (GetAllResponse) {
+  rpc GetAll(EquipmentGetAllRequest) returns (EquipmentGetAllResponse) {
        option (google.api.http) = {
           get: "/administration/equipment"
      };
   }
-  rpc Create(CreateRequest) returns (CreateResponse) {
+  rpc Create(EquipmentCreateRequest) returns (EquipmentCreateResponse) {
       option (google.api.http) = {
           post: "/administration/equipment",
           body: "*"
@@ -120,24 +120,24 @@ message EquipmentReview {
   repeated string Images = 8;
 }
 
-message GetByIdRequest {
+message EquipmentGetByIdRequest {
   string ID = 1;
 }
 
-message GetByIdResponse {
+message EquipmentGetByIdResponse {
   Equipment equipment = 1;
 }
 
-message GetAllRequest {
+message EquipmentGetAllRequest {
 }
 
-message GetAllResponse {
+message EquipmentGetAllResponse {
   repeated Equipment equipment = 1;
 }
 
-message CreateRequest {
+message EquipmentCreateRequest {
   Equipment equipment = 1;
 }
 
-message CreateResponse {
+message EquipmentCreateResponse {
 }
