@@ -67,5 +67,37 @@ namespace Explorer.API.Controllers.Tourist
                 Comments = { response.Comments }
             });
         }
+
+        public override async Task<GetCommentByIdResponse> GetCommentById(GetCommentByIdRequest request, ServerCallContext context)
+        {
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://blogs:8082/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new CommentsService.CommentsServiceClient(channel);
+            var response = await client.GetCommentByIdAsync(request);
+            Console.WriteLine("GET COMMENT BY ID: " + response.Comment);
+
+            return await Task.FromResult(new GetCommentByIdResponse
+            {
+                Comment = response.Comment
+            });
+        }
+
+        public override async Task<GetCommentByBlogIdResponse> GetCommentByBlogId(GetCommentByBlogIdRequest request, ServerCallContext context)
+        {
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://blogs:8082/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new CommentsService.CommentsServiceClient(channel);
+            var response = await client.GetCommentByBlogIdAsync(request);
+            Console.WriteLine("GET COMMENT BY BLOG ID: " + response.Comments);
+
+            return await Task.FromResult(new GetCommentByBlogIdResponse
+            {
+                Comments = { response.Comments }
+            });
+        }
     }
 }

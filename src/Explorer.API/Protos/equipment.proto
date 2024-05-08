@@ -26,15 +26,15 @@ service EquipmentService {
 }
 
 message Equipment {
-  int64 ID = 1;
-  string Name = 2;
-  string Description = 3;
-  repeated EquipmentTour Tours = 4;
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  repeated EquipmentTour tours = 4;
 }
 
 message EquipmentTour {
   int64 id = 1;
-  int32 author_id = 2;
+  int32 authorId = 2;
   string name = 3;
   string description = 4;
   int32 difficulty = 5;
@@ -58,31 +58,31 @@ message EquipmentTour {
   }
   TourCategory category = 12;
   bool is_deleted = 13;
-  repeated EquipmentKeyPoint key_points = 14;
+  repeated EquipmentKeyPoint keyPoints = 14;
   repeated Equipment equipment = 15;
   repeated EquipmentReview reviews = 16;
   repeated EquipmentTourDuration durations = 17;
 }
 
 message EquipmentKeyPoint {
-  int64 ID = 1;
-  int64 TourId = 2;
-  string Name = 3;
-  string Description = 4;
-  double Longitude = 5;
-  double Latitude = 6;
-  string LocationAddress = 7;
-  string ImagePath = 8;
-  int64 Order = 9;
+  int64 id = 1;
+  int64 tourId = 2;
+  string name = 3;
+  string description = 4;
+  double longitude = 5;
+  double latitude = 6;
+  string locationAddress = 7;
+  string imagePath = 8;
+  int64 order = 9;
 }
 
 message EquipmentFacility {
-  int64 ID = 1;
-  int64 AuthorId = 2;
-  string Name = 3;
-  string Description = 4;
-  double Longitude = 5;
-  double Latitude = 6;
+  int64 id = 1;
+  int64 authorId = 2;
+  string name = 3;
+  string description = 4;
+  double longitude = 5;
+  double latitude = 6;
   enum Category {
     Restaurant = 0;
     ParkingLot = 1;
@@ -96,11 +96,11 @@ message EquipmentFacility {
     Other = 9;
   };
   Category category = 8;
-  string ImagePath = 9;
+  string imagePath = 9;
 }
 
 message EquipmentTourDuration {
-  int32 Duration = 1;
+  int32 duration = 1;
   enum TransportType {
     Walking = 0;
     Bicycle = 1;
@@ -110,14 +110,14 @@ message EquipmentTourDuration {
 }
 
 message EquipmentReview {
-  int64 ID = 1;
-  int32 Rating = 2;
-  string Comment = 3;
-  int32 TouristId = 4;
-  int64 TourId = 5;
-  google.protobuf.Timestamp TourVisitDate = 6;
-  google.protobuf.Timestamp CommentDate = 7;
-  repeated string Images = 8;
+  int64 id = 1;
+  int32 rating = 2;
+  string comment = 3;
+  int32 touristId = 4;
+  int64 tourId = 5;
+  google.protobuf.Timestamp tourVisitDate = 6;
+  google.protobuf.Timestamp commentDate = 7;
+  repeated string images = 8;
 }
 
 message EquipmentGetByIdRequest {

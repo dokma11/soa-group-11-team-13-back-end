@@ -53,7 +53,7 @@ namespace Explorer.API.Controllers.Author
 
             var client = new FacilitiesService.FacilitiesServiceClient(channel);
             var response = await client.CreateFacilityAsync(request);
-            Console.WriteLine("CREATE A FACILITY: ");
+            Console.WriteLine("CREATE A FACILITY: " + request);
 
             return await Task.FromResult(new CreateFacilityResponse { });
         }

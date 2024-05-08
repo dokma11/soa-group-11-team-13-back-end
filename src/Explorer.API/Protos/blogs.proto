@@ -16,31 +16,31 @@ service BlogsService {
 
   rpc GetAllBlogs(GetAllBlogsRequest) returns (GetAllBlogsResponse) {
     option (google.api.http) = {
-        get: "/blogs"
+        get: "/blogs/all"
     };
   }
 
   rpc GetBlogById(GetBlogByIdRequest) returns (GetBlogByIdResponse) {
     option (google.api.http) = {
-        get: "/blogs"
+        get: "/blogs/id"
     };
   }
 
   rpc GetBlogsByAuthorsId(GetBlogsByAuthorsIdRequest) returns (GetBlogsByAuthorsIdResponse) {
     option (google.api.http) = {
-        get: "/blogs"
+        get: "/blogs/authorId"
     };
   }
 
   rpc GetBlogsByAuthorsIds(GetBlogsByAuthorsIdsRequest) returns (GetBlogsByAuthorsIdsResponse) {
     option (google.api.http) = {
-        get: "/blogs"
+        get: "/blogs/authorIds"
     };
   }
 
   rpc SearchBlogByName(SearchBlogByNameRequest) returns (SearchBlogByNameResponse) {
     option (google.api.http) = {
-        get: "/blogs"
+        get: "/blogs/search"
     };
   }
 

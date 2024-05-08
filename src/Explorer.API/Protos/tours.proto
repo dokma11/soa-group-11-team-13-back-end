@@ -81,12 +81,12 @@ service ToursService {
 }
 
 message Tour {
-  int64 ID = 1;
-  int32 AuthorId = 2;
-  string Name = 3;
-  string Description = 4;
-  int32 Difficulty = 5;
-  repeated string Tags = 6;
+  int64 id = 1;
+  int32 authorId = 2;
+  string name = 3;
+  string description = 4;
+  int32 difficulty = 5;
+  repeated string tags = 6;
   enum TourStatus {
     Draft = 0;
     Published = 1;
@@ -94,10 +94,10 @@ message Tour {
     Ready = 3;
   }
   TourStatus status = 7;
-  double Price = 8;
-  double Distance = 9;
-  google.protobuf.Timestamp PublishDate = 10;
-  google.protobuf.Timestamp ArchiveDate = 11;
+  double price = 8;
+  double distance = 9;
+  google.protobuf.Timestamp publishDate = 10;
+  google.protobuf.Timestamp archiveDate = 11;
   enum TourCategory {
     Adventure = 0;
     FamilyTrips = 1;
@@ -105,27 +105,27 @@ message Tour {
     Cultural = 3;
   }
   TourCategory category = 12;
-  bool IsDeleted = 13;
-  repeated TourKeyPoint KeyPoints = 14;
+  bool isDeleted = 13;
+  repeated TourKeyPoint keyPoints = 14;
   repeated TourEquipment equipment = 15;
-  repeated TourReview Reviews = 16;
-  repeated TourDuration Durations = 17;
+  repeated TourReview reviews = 16;
+  repeated TourDuration durations = 17;
 }
 
 message TourEquipment {
-  int64 ID = 1;
-  string Name = 2;
-  string Description = 3;
-  repeated Tour Tours = 4;
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  repeated Tour tours = 4;
 }
 
 message TourFacility {
-  int64 ID = 1;
-  int64 AuthorId = 2;
-  string Name = 3;
-  string Description = 4;
-  double Longitude = 5;
-  double Latitude = 6;
+  int64 id = 1;
+  int64 authorId = 2;
+  string name = 3;
+  string description = 4;
+  double longitude = 5;
+  double latitude = 6;
   enum Category {
     Restaurant = 0;
     ParkingLot = 1;
@@ -139,23 +139,23 @@ message TourFacility {
     Other = 9;
   };
   Category category = 8;
-  string ImagePath = 9;
+  string imagePath = 9;
 }
 
 message TourKeyPoint {
-  int64 ID = 1;
-  int64 TourId = 2;
-  string Name = 3;
-  string Description = 4;
-  double Longitude = 5;
-  double Latitude = 6;
-  string LocationAddress = 7;
-  string ImagePath = 8;
-  int64 Order = 9;
+  int64 id = 1;
+  int64 tourId = 2;
+  string name = 3;
+  string description = 4;
+  double longitude = 5;
+  double latitude = 6;
+  string locationAddress = 7;
+  string imagePath = 8;
+  int64 order = 9;
 }
 
 message TourDuration {
-  int32 Duration = 1;
+  int32 duration = 1;
   enum TransportType {
     Walking = 0;
     Bicycle = 1;
@@ -165,14 +165,14 @@ message TourDuration {
 }
 
 message TourReview {
-  int64 ID = 1;
-  int32 Rating = 2;
-  string Comment = 3;
-  int32 TouristId = 4;
-  int64 TourId = 5;
-  google.protobuf.Timestamp TourVisitDate = 6;
-  google.protobuf.Timestamp CommentDate = 7;
-  repeated string Images = 8;
+  int64 id = 1;
+  int32 rating = 2;
+  string comment = 3;
+  int32 touristId = 4;
+  int64 tourId = 5;
+  google.protobuf.Timestamp tourVisitDate = 6;
+  google.protobuf.Timestamp commentDate = 7;
+  repeated string images = 8;
 }
 
 message GetAllToursRequest {

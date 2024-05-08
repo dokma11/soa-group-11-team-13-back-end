@@ -9,19 +9,19 @@ import "google/protobuf/timestamp.proto";
 service CommentsService {
   rpc GetCommentById(GetCommentByIdRequest) returns (GetCommentByIdResponse) {
 	option (google.api.http) = {
-        get: "/comments"
+        get: "/comments/id"
     };
   }
 
   rpc GetAllComments(GetAllCommentsRequest) returns (GetAllCommentsResponse) {
     option (google.api.http) = {
-        get: "/comments"
+        get: "/comments/all"
     };
   }
 
   rpc GetCommentByBlogId(GetCommentByBlogIdRequest) returns (GetCommentByBlogIdResponse) {
     option (google.api.http) = {
-        get: "/comments"
+        get: "/comments/blogId"
     };
   }
 

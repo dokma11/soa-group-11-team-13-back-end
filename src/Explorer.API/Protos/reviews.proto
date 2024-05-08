@@ -13,14 +13,14 @@ service ReviewsService {
 }
 
 message Review {
-  int64 ID = 1;
-  int32 Rating = 2;
-  string Comment = 3;
-  int32 TouristId = 4;
-  int64 TourId = 5;
-  google.protobuf.Timestamp TourVisitDate = 6;
-  google.protobuf.Timestamp CommentDate = 7;
-  repeated string Images = 8;
+  int64 id = 1;
+  int32 rating = 2;
+  string comment = 3;
+  int32 touristId = 4;
+  int64 tourId = 5;
+  google.protobuf.Timestamp tourVisitDate = 6;
+  google.protobuf.Timestamp commentDate = 7;
+  repeated string images = 8;
 }
 
 message GetReviewByIdRequest {
