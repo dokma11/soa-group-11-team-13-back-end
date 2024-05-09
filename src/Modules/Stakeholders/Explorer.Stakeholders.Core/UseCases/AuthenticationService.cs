@@ -38,7 +38,7 @@ public class AuthenticationService : IAuthenticationService
         {
             personId = 0;
         }
-        return _tokenGenerator.GenerateAccessToken(user, personId);
+        return _tokenGenerator.GenerateAccessToken(user, personId).Result;
     }
 
     public Result<RegistrationConfirmationTokenDto> RegisterTourist(AccountRegistrationDto account)
