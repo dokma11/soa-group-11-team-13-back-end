@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Explorer.Stakeholders.Infrastructure.Authentication;
 
@@ -16,22 +17,21 @@ public class JwtGenerator : ITokenGenerator
     private readonly string _issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "explorer";
     private readonly string _audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "explorer-front.com";
 
-    public Result<AuthenticationTokensDto> GenerateAccessToken(User user, long personId)
+    private static readonly HttpClient _sharedClient = new HttpClient() { BaseAddress = new Uri("http://localhost:8085/") };
+
+    public async Task<Result<AuthenticationTokensDto>> GenerateAccessToken(User user, long personId)
     {
         var authenticationResponse = new AuthenticationTokensDto();
 
-        var claims = new List<Claim>
-        {
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new("id", user.Id.ToString()),
-            new("username", user.Username),
-            new("personId", personId.ToString()),
-            new(ClaimTypes.Role, user.GetPrimaryRoleName())
-        };
+        var requestUrl = $"jwt?id={user.Id}&username={user.Username}&personId={personId}&role={user.GetPrimaryRoleName}";
 
-        var jwt = CreateToken(claims, 60 * 24 * 100);
+        using HttpResponseMessage response = await _sharedClient.GetAsync(requestUrl);
+        response.EnsureSuccessStatusCode();
+
+        var jsonResponse = await response.Content.ReadAsStringAsync();
+
         authenticationResponse.Id = user.Id;
-        authenticationResponse.AccessToken = jwt;
+        authenticationResponse.AccessToken = jsonResponse.Substring(1, jsonResponse.Length - 3);
 
         return authenticationResponse;
     }
