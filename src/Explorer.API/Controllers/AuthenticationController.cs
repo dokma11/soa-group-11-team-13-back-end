@@ -22,7 +22,7 @@ public class AuthenticationController : BaseApiController
     private readonly IAuthenticationService _authenticationService;
     private readonly IWalletService _walletService;
     private readonly ILogger<AuthenticationController> _logger;
-    private readonly string _jwtServiceAddress = "http://localhost:8085"; // JWT service address
+    private readonly string _jwtServiceAddress = "http://jwt:8085"; // JWT service address
 
 
     public AuthenticationController(IAuthenticationService authenticationService, IWalletService walletService, ILogger<AuthenticationController> logger)
