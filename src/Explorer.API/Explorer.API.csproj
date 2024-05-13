@@ -57,6 +57,7 @@
 	  <Protobuf Include="Protos\blogs.proto" />
 	  <Protobuf Include="Protos\blog_recommendations.proto" />
 	  <Protobuf Include="Protos\votes.proto" />
+	  <Protobuf Include="Protos\jwt.proto" />
   </ItemGroup>
 
 </Project>

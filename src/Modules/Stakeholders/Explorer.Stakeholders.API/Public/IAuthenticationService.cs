@@ -1,4 +1,5 @@
 ﻿using Explorer.Stakeholders.API.Dtos;
+//using Explorer.Stakeholders.Core.Domain;
 using FluentResults;
 
 namespace Explorer.Stakeholders.API.Public;
@@ -10,4 +11,5 @@ public interface IAuthenticationService
     Result<ResetPasswordTokenDto> GenerateResetPasswordToken(ResetPasswordEmailDto resetPasswordEmailDto);
     Result ResetPassword(ResetPasswordRequestDto resetPasswordRequestDto, string email);
     Result<string> ConfirmRegistration(string username, string claim);
+    Result<UserDto> ValidateCredentials(CredentialsDto credentials);
 }

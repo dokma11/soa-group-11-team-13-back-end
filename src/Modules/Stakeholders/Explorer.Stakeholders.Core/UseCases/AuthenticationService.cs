@@ -25,6 +25,38 @@ public class AuthenticationService : IAuthenticationService
         _emailSender = emailSender;
     }
 
+    public Result<UserDto> ValidateCredentials(CredentialsDto credentials)
+    {
+        var user = _userRepository.GetActiveByName(credentials.Username);
+        if (user == null || !BC.BCrypt.Verify(credentials.Password, user.Password))
+        {
+            // Explicitly return a failure result if credentials are invalid
+            return Result.Fail<UserDto>("Invalid username or password.");
+        }
+
+        long personId;
+        try
+        {
+            personId = _userRepository.GetPersonId(user.Id);
+        }
+        catch (KeyNotFoundException)
+        {
+            personId = 0; // Decide how you want to handle cases where the personId is not found.
+        }
+
+        // If we reach this point, user credentials are valid
+        var userDto = new UserDto
+        {
+            Id = user.Id.ToString(),
+            Username = user.Username,
+            Role = user.GetPrimaryRoleName(), // Ensure this method exists and is accessible
+            PersonId = personId
+        };
+
+        // Explicitly return a success result with the user data
+        return Result.Ok(userDto);
+    }
+
     public Result<AuthenticationTokensDto> Login(CredentialsDto credentials)
     {
         var user = _userRepository.GetActiveByName(credentials.Username);
