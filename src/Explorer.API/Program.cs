@@ -43,7 +43,7 @@ app.MapGrpcService<KeyPointController>();
 app.MapGrpcService<EquipmentController>();
 app.MapGrpcService<CommentController>();
 app.MapGrpcService<BlogController>();
-
+app.MapGrpcService<BlogRecommendationsController>();
 
 app.Run();
 
