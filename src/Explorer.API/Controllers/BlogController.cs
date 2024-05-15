@@ -19,6 +19,8 @@ namespace Explorer.API.Controllers
             httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             var channel = GrpcChannel.ForAddress("http://blogs:8082/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
+            Console.WriteLine("CREATE BLOG REQ: " + request);
+
             var client = new BlogsService.BlogsServiceClient(channel);
             var response = await client.CreateBlogAsync(request);
             Console.WriteLine("CREATE BLOG");
@@ -166,106 +168,6 @@ namespace Explorer.API.Controllers
                     return CreateResponse(result);
                 }
         */
-
-        /*          OVE POTENCIJALNO PREBACITI U NOVI MIKROSERVIS          */
-
-        /*//[Authorize(Policy = "touristPolicy")]
-        [HttpPost("recommendations")]
-        public async Task<ActionResult<BlogRecommendationResponseDto>> RecommendBlog([FromBody] BlogRecommendationRequestDto request)
-        {
-            try
-            {
-                var recommenderId = int.Parse(HttpContext.User.Claims.First(i => i.Type.Equals("id", StringComparison.OrdinalIgnoreCase)).Value);
-                var receiverId = this._userService.GetByUsername(request.RecommendationReceiverUsername).Value.Id;
-                var blogRecommendationMicroserviceRequest = new BlogRecommendationMicorserviceRequestDto() { BlogId = request.BlogId, RecommendationReceiverId = receiverId, RecommenderId = recommenderId };
-                string json = JsonConvert.SerializeObject(blogRecommendationMicroserviceRequest);
-                StringContent content = new(json, Encoding.UTF8, "application/json");
-
-                HttpResponseMessage response = await _sharedClient.PostAsync("blog-recommendations", content);
-                response.EnsureSuccessStatusCode();
-                return Ok(response);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (NullReferenceException)
-            {
-                return NotFound();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
-        }
-
-        [Authorize(Policy = "touristPolicy")]
-        [HttpGet("recommendations/{id:long}")]
-        public async Task<ActionResult<BlogRecommendationResponseDto>> GetBlogRecommendationById(long id)
-        {
-            try
-            {
-                using HttpResponseMessage response = await _sharedClient.GetAsync("blog-recommendations/" + id.ToString());
-
-                if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return NotFound();
-
-                response.EnsureSuccessStatusCode();
-
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                var data = JsonConvert.DeserializeObject<BlogRecommendationResponseDto>(jsonResponse);
-
-                return Ok(data);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
-        }
-
-        [Authorize(Policy = "touristPolicy")]
-        [HttpGet("recommendations/notifications")]
-        public async Task<ActionResult<List<BlogRecommendationNotificationDto>>> GetBlogRecommendationNotifications()
-        {
-            try
-            {
-                var loggedInUserId = int.Parse(HttpContext.User.Claims.First(i => i.Type.Equals("id", StringComparison.OrdinalIgnoreCase)).Value);
-                using HttpResponseMessage response = await _sharedClient.GetAsync("blog-recommendations/by-receiver/" + loggedInUserId.ToString());
-
-                if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return NotFound();
-
-                response.EnsureSuccessStatusCode();
-
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                var data = JsonConvert.DeserializeObject<List<BlogRecommendationResponseDto>>(jsonResponse);
-
-                var notifications = new List<BlogRecommendationNotificationDto>();
-
-                if (data == null) return NotFound();
-
-                foreach (var blogRecommendation in data)
-                {
-                    var receiverUsername = _userService.GetNameById(blogRecommendation.RecommenderId).Value;
-                    var description = "You have received a recommendation for blog '" + blogRecommendation.Blog.Title + "' from " + receiverUsername + ".";
-                    var notification = new BlogRecommendationNotificationDto() { Description = description };
-                    notifications.Add(notification);
-                }
-
-                return Ok(notifications);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
-        }
-*/
         public override async Task<PublishBlogResponse> PublishBlog(PublishBlogRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();

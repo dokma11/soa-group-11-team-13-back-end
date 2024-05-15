@@ -175,6 +175,11 @@ message TourReview {
   repeated string images = 8;
 }
 
+message TourEquipmentIds {
+  string tourId = 1;
+  string equipmentId = 2;
+}
+
 message GetAllToursRequest {
 }
 
@@ -227,14 +232,14 @@ message DeleteTourResponse {
 }
 
 message PublishTourRequest {
-  string ID = 1;
+  Tour tour = 1;
 }
 
 message PublishTourResponse {
 }
 
 message ArchiveTourRequest {
-  string ID = 1;
+  Tour tour = 1;
 }
 
 message ArchiveTourResponse {
@@ -248,8 +253,7 @@ message AddToursDurationsResponse {
 }
 
 message AddToursEquipmentRequest {
-  string tourId = 1;
-  string equipmentId = 2;
+  TourEquipmentIds ids = 1;
 }
 
 message AddToursEquipmentResponse {
