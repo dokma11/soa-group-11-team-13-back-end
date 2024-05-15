@@ -34,17 +34,17 @@ service BlogRecommendationService {
 }
 
 message BlogRecommendation {
-  int32 ID = 1;
-  int32 BlogId = 2;
-  int32 RecommenderId = 3;
-  int32 RecommendationReceiverId = 4;
-  RecommenderBlog blog = 5;
+  int32 id = 1;
+  int32 blogId = 2;
+  int32 recommenderId = 3;
+  int32 recommendationReceiverId = 4;
+  //RecommenderBlog blog = 5;
 }
 
 message RecommenderBlog {
-  int32 ID = 1;
-  string Title = 2;
-  string Description = 3;
+  int32 id = 1;
+  string title = 2;
+  string description = 3;
   enum BlogStatus {
     Draft = 0;
     Published = 1;
@@ -52,31 +52,31 @@ message RecommenderBlog {
     Active = 3;
     Famous = 4;
   }
-  BlogStatus Status = 4;
-  int32 AuthorId = 5;
-  repeated RecommenderComment Comments = 6;
-  repeated RecommenderVote Votes = 7;
-  repeated BlogRecommendation Recommendations = 8;
+  BlogStatus status = 4;
+  int32 authorId = 5;
+  repeated RecommenderComment comments = 6;
+  repeated RecommenderVote votes = 7;
+  repeated BlogRecommendation recommendations = 8;
 }
 
 message RecommenderComment {
-  int32 ID = 1;
-  int32 AuthorId = 2;
-  int32 BlogId = 3;
-  string Text = 4;
-  google.protobuf.Timestamp CreatedAt = 5;
-  google.protobuf.Timestamp UpdatedAt = 6;
+  int32 id = 1;
+  int32 authorId = 2;
+  int32 blogId = 3;
+  string text = 4;
+  google.protobuf.Timestamp createdAt = 5;
+  google.protobuf.Timestamp updatedAt = 6;
 }
 
 message RecommenderVote {
-  int32 ID = 1;
-  int32 UserId = 2;
-  int32 BlogId = 3;
+  int32 id = 1;
+  int32 userId = 2;
+  int32 blogId = 3;
   enum VoteType {
     Downvote = 0;
     Upvote = 1;
   }
-  VoteType Type = 4;
+  VoteType type = 4;
 }
 
 message CreateBlogRecommendationRequest {
