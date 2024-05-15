@@ -1,6 +1,7 @@
 ﻿using Grpc.Core;
 using Grpc.Net.Client;
 using GrpcServiceTranscoding;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Explorer.API.Controllers.Author.TourAuthoring
 {
@@ -46,6 +47,7 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
             });
         }
 
+        [Authorize(Policy = "authorPolicy")]
         public override async Task<GetToursByAuthorIdResponse> GetToursByAuthorId(GetToursByAuthorIdRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();
@@ -62,6 +64,7 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
             });
         }
 
+        [Authorize(Policy = "authorPolicy")]
         public override async Task<CreateTourResponse> CreateTour(CreateTourRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();
@@ -75,6 +78,7 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
             return await Task.FromResult(new CreateTourResponse { });
         }
 
+        [Authorize(Policy = "authorPolicy")]
         public override async Task<UpdateTourResponse> UpdateTour(UpdateTourRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();
@@ -88,6 +92,7 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
             return await Task.FromResult(new UpdateTourResponse { });
         }
 
+        [Authorize(Policy = "authorPolicy")]
         public override async Task<DeleteTourResponse> DeleteTour(DeleteTourRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();
@@ -117,6 +122,7 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
             });
         }
 
+        [Authorize(Policy = "authorPolicy")]
         public override async Task<AddToursEquipmentResponse> AddToursEquipment(AddToursEquipmentRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();
@@ -130,6 +136,7 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
             return await Task.FromResult(new AddToursEquipmentResponse { });
         }
 
+        [Authorize(Policy = "authorPolicy")]
         public override async Task<DeleteToursEquipmentResponse> DeleteToursEquipment(DeleteToursEquipmentRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();
@@ -159,6 +166,7 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
             });
         }
 
+        [Authorize(Policy = "authorPolicy")]
         public override async Task<PublishTourResponse> PublishTour(PublishTourRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();
@@ -172,6 +180,7 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
             return await Task.FromResult(new PublishTourResponse { });
         }
 
+        [Authorize(Policy = "authorPolicy")]
         public override async Task<AddToursDurationsResponse> AddToursDurations(AddToursDurationsRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();
@@ -185,6 +194,7 @@ namespace Explorer.API.Controllers.Author.TourAuthoring
             return await Task.FromResult(new AddToursDurationsResponse { });
         }
 
+        [Authorize(Policy = "authorPolicy")]
         public override async Task<ArchiveTourResponse> ArchiveTour(ArchiveTourRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();

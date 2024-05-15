@@ -1,6 +1,7 @@
 ﻿using Grpc.Core;
 using Grpc.Net.Client;
 using GrpcServiceTranscoding;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Explorer.API.Controllers.Author
 {
@@ -29,6 +30,7 @@ namespace Explorer.API.Controllers.Author
             });
         }
 
+        [Authorize(Policy = "authorPolicy")]
         public override async Task<GetFacilitiesByAuthorIdResponse> GetFacilitiesByAuthorId(GetFacilitiesByAuthorIdRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();
@@ -45,6 +47,7 @@ namespace Explorer.API.Controllers.Author
             });
         }
 
+        [Authorize(Policy = "authorPolicy")]
         public override async Task<CreateFacilityResponse> CreateFacility(CreateFacilityRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();
@@ -58,6 +61,7 @@ namespace Explorer.API.Controllers.Author
             return await Task.FromResult(new CreateFacilityResponse { });
         }
 
+        [Authorize(Policy = "authorPolicy")]
         public override async Task<UpdateFacilityResponse> UpdateFacility(UpdateFacilityRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();
@@ -71,6 +75,7 @@ namespace Explorer.API.Controllers.Author
             return await Task.FromResult(new UpdateFacilityResponse { });
         }
 
+        [Authorize(Policy = "authorPolicy")]
         public override async Task<DeleteFacilityResponse> DeleteFacility(DeleteFacilityRequest request, ServerCallContext context)
         {
             var httpHandler = new HttpClientHandler();

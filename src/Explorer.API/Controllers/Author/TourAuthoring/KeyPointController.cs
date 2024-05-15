@@ -19,6 +19,8 @@ public class KeyPointController : KeyPointsService.KeyPointsServiceBase
     {
         _logger = logger;
     }
+
+    [Authorize(Policy = "authorPolicy")]
     public override async Task<KeyPointCreateResponse> Create(KeyPointCreateRequest request, ServerCallContext context)
     {
         var httpHandler = new HttpClientHandler();
@@ -32,6 +34,7 @@ public class KeyPointController : KeyPointsService.KeyPointsServiceBase
     }
 
 
+    [Authorize(Policy = "authorPolicy")]
     public override async Task<KeyPointUpdateResponse> Update(KeyPointUpdateRequest request, ServerCallContext context)
     {
         var httpHandler = new HttpClientHandler();
@@ -44,6 +47,7 @@ public class KeyPointController : KeyPointsService.KeyPointsServiceBase
         return await Task.FromResult(new KeyPointUpdateResponse { });
     }
 
+    [Authorize(Policy = "authorPolicy")]
     public override async Task<KeyPointDeleteResponse> Delete(KeyPointDeleteRequest request, ServerCallContext context)
     {
         var httpHandler = new HttpClientHandler();
