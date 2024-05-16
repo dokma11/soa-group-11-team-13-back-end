@@ -1,80 +1,103 @@
-﻿using Explorer.Blog.API.Dtos;
-using Explorer.Blog.API.Public;
-using Explorer.BuildingBlocks.Core.UseCases;
-using FluentResults;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Grpc.Core;
+using Grpc.Net.Client;
+using GrpcServiceTranscoding;
 
 namespace Explorer.API.Controllers.Tourist
 {
-    [Route("api/tourist/comment")]
-    public class CommentController : BaseApiController
+    public class CommentController : CommentsService.CommentsServiceBase
     {
-        private readonly ICommentService _commentService;
-        private readonly IBlogService _blogService;
+        private readonly ILogger<CommentController> _logger;
 
-        public CommentController(ICommentService commentService, IBlogService blogService)
+        public CommentController(ILogger<CommentController> logger)
         {
-            _commentService = commentService;
-            _blogService = blogService;
+            _logger = logger;
         }
 
-        [Authorize(Policy = "userPolicy")]
-        [HttpPost]
-        public ActionResult<CommentResponseDto> Create([FromBody] CommentCreateDto comment)
+        public override async Task<CreateCommentResponse> CreateComment(CreateCommentRequest request, ServerCallContext context)
         {
-            if (_blogService.IsBlogClosed(comment.BlogId)) return CreateResponse(Result.Fail(FailureCode.InvalidArgument));
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://blogs:8082/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            var authorId = long.Parse(HttpContext.User.Claims.First(i => i.Type.Equals("id", StringComparison.OrdinalIgnoreCase)).Value);
-            comment.AuthorId = authorId;
-            comment.CreatedAt = DateTime.UtcNow;
-            var result = _commentService.Create(comment);
-            return CreateResponse(result);
+            var client = new CommentsService.CommentsServiceClient(channel);
+            var response = await client.CreateCommentAsync(request);
+            Console.WriteLine("CREATE COMMENT ");
+
+            return await Task.FromResult(new CreateCommentResponse { });
         }
 
-        [Authorize(Policy = "userPolicy")]
-        [HttpPut("{commentId:long}")]
-        public ActionResult<CommentResponseDto> Update([FromBody] CommentUpdateDto commentData, long commentId)
+        public override async Task<UpdateCommentResponse> UpdateComment(UpdateCommentRequest request, ServerCallContext context)
         {
-            var senderId = long.Parse(HttpContext.User.Claims.First(i => i.Type.Equals("id", StringComparison.OrdinalIgnoreCase)).Value);
-            var comment = _commentService.Get(commentId);
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://blogs:8082/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            if (_blogService.IsBlogClosed(comment.Value.BlogId)) return CreateResponse(Result.Fail(FailureCode.InvalidArgument));
+            var client = new CommentsService.CommentsServiceClient(channel);
+            var response = await client.UpdateCommentAsync(request);
+            Console.WriteLine("UPDATE COMMENT ");
 
+            return await Task.FromResult(new UpdateCommentResponse { });
+        }
 
-            if (senderId != comment.Value.AuthorId)
+        public override async Task<DeleteCommentResponse> DeleteComment(DeleteCommentRequest request, ServerCallContext context)
+        {
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://blogs:8082/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new CommentsService.CommentsServiceClient(channel);
+            var response = await client.DeleteCommentAsync(request);
+            Console.WriteLine("DELETE COMMENT ");
+
+            return await Task.FromResult(new DeleteCommentResponse { });
+        }
+
+        public override async Task<GetAllCommentsResponse> GetAllComments(GetAllCommentsRequest request, ServerCallContext context)
+        {
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://blogs:8082/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new CommentsService.CommentsServiceClient(channel);
+            var response = await client.GetAllCommentsAsync(request);
+            Console.WriteLine("GET ALL COMMENTS: " + response.Comments);
+
+            return await Task.FromResult(new GetAllCommentsResponse
             {
-                return CreateResponse(Result.Fail(FailureCode.Forbidden));
-            }
-            commentData.Id = commentId;
-            var result = _commentService.UpdateComment(commentData);
-            return CreateResponse(result);
+                Comments = { response.Comments }
+            });
         }
 
-        [Authorize(Policy = "userPolicy")]
-        [HttpDelete("{commentId:long}")]
-        public ActionResult Delete(long commentId)
+        public override async Task<GetCommentByIdResponse> GetCommentById(GetCommentByIdRequest request, ServerCallContext context)
         {
-            var senderId = long.Parse(HttpContext.User.Claims.First(i => i.Type.Equals("id", StringComparison.OrdinalIgnoreCase)).Value);
-            var comment = _commentService.Get(commentId);
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://blogs:8082/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            if (_blogService.IsBlogClosed(comment.Value.BlogId)) return CreateResponse(Result.Fail(FailureCode.InvalidArgument));
+            var client = new CommentsService.CommentsServiceClient(channel);
+            var response = await client.GetCommentByIdAsync(request);
+            Console.WriteLine("GET COMMENT BY ID: " + response.Comment);
 
-
-            if (senderId != comment.Value.AuthorId)
+            return await Task.FromResult(new GetCommentByIdResponse
             {
-                return CreateResponse(Result.Fail(FailureCode.Forbidden));
-            }
-            var result = _commentService.Delete(commentId);
-            return CreateResponse(result);
-
+                Comment = response.Comment
+            });
         }
 
-        [HttpGet("{blogId:long}")]
-        public ActionResult<PagedResult<CommentResponseDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize, long blogId)
+        public override async Task<GetCommentByBlogIdResponse> GetCommentByBlogId(GetCommentByBlogIdRequest request, ServerCallContext context)
         {
-            var result = _commentService.GetPagedByBlogId(page, pageSize, blogId);
-            return CreateResponse(result);
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://blogs:8082/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new CommentsService.CommentsServiceClient(channel);
+            var response = await client.GetCommentByBlogIdAsync(request);
+            Console.WriteLine("GET COMMENT BY BLOG ID: " + response.Comments);
+
+            return await Task.FromResult(new GetCommentByBlogIdResponse
+            {
+                Comments = { response.Comments }
+            });
         }
     }
 }

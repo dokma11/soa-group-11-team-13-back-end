@@ -1,5 +1,8 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
+using Grpc.Core;
+using Grpc.Net.Client;
+using GrpcServiceTranscoding;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -7,108 +10,80 @@ using System.Text;
 
 namespace Explorer.API.Controllers.Author.TourAuthoring;
 
-[Route("api/tour-authoring")]
-public class KeyPointController : BaseApiController
+public class KeyPointController : KeyPointsService.KeyPointsServiceBase
 {
-    private static readonly HttpClient _sharedClient = new()
+
+    private readonly ILogger<KeyPointController> _logger;
+
+    public KeyPointController(ILogger<KeyPointController> logger)
     {
-        BaseAddress = new Uri("http://localhost:8081/"),
-    };
-
-    [Authorize(Roles = "author")]
-    [HttpPost("tours/{tourId:long}/key-points")]
-    public async Task<ActionResult<KeyPointResponseDto>> CreateKeyPoint([FromRoute] long tourId, [FromBody] KeyPointCreateDto keyPoint)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        keyPoint.TourId = tourId;
-
-        try
-        {
-            string json = JsonConvert.SerializeObject(keyPoint);
-            StringContent content = new(json, Encoding.UTF8, "application/json");
-
-            HttpResponseMessage response = await _sharedClient.PostAsync("keyPoints", content);
-            response.EnsureSuccessStatusCode();
-
-            return Ok(response);
-        }
-        catch (HttpRequestException)
-        {
-            return BadRequest();
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "Internal Server Error");
-        }
+        _logger = logger;
     }
 
-    [Authorize(Roles = "author")]
-    [HttpPut("tours/{tourId:long}/key-points/{id:long}")]
-    public async Task<ActionResult<KeyPointResponseDto>> Update(long tourId, long id, [FromBody] KeyPointUpdateDto keyPoint)
+    [Authorize(Policy = "authorPolicy")]
+    public override async Task<KeyPointCreateResponse> Create(KeyPointCreateRequest request, ServerCallContext context)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
+        var httpHandler = new HttpClientHandler();
+        httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-        keyPoint.Id = id;
+        var client = new KeyPointsService.KeyPointsServiceClient(channel);
+        var response = await client.CreateAsync(request);
 
-        try
-        {
-            string json = JsonConvert.SerializeObject(keyPoint);
-            StringContent content = new(json, Encoding.UTF8, "application/json");
-
-            var response = await _sharedClient.PutAsync("keyPoints/", content);
-            response.EnsureSuccessStatusCode();
-
-            return Ok(response);
-        }
-        catch (HttpRequestException)
-        {
-            return BadRequest();
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "Internal Server Error");
-        }
+        return await Task.FromResult(new KeyPointCreateResponse {});
     }
 
-    [Authorize(Roles = "author, tourist")]
-    [HttpDelete("tours/{tourId:long}/key-points/{id:long}")]
-    public async Task<ActionResult> Delete(long tourId, long id)
+
+    [Authorize(Policy = "authorPolicy")]
+    public override async Task<KeyPointUpdateResponse> Update(KeyPointUpdateRequest request, ServerCallContext context)
     {
-        try
-        {
-            var response = await _sharedClient.DeleteAsync("keyPoints/" + id);
-            response.EnsureSuccessStatusCode();
-            return Ok(response);
-        }
-        catch (HttpRequestException)
-        {
-            return BadRequest();
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "Internal Server Error");
-        }
+        var httpHandler = new HttpClientHandler();
+        httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+        var client = new KeyPointsService.KeyPointsServiceClient(channel);
+        var response = await client.UpdateAsync(request);
+
+        return await Task.FromResult(new KeyPointUpdateResponse { });
     }
 
-    [Authorize(Roles = "author")]
-    [HttpGet]
-    public async Task<ActionResult<PagedResult<KeyPointResponseDto>>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
+    [Authorize(Policy = "authorPolicy")]
+    public override async Task<KeyPointDeleteResponse> Delete(KeyPointDeleteRequest request, ServerCallContext context)
     {
-        var response = await _sharedClient.GetFromJsonAsync<List<KeyPointResponseDto>>("keyPoints/");
+        var httpHandler = new HttpClientHandler();
+        httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-        if (response != null)
-        {
-            var pagedResult = new PagedResult<KeyPointResponseDto>(response, response.Count);
-            return Ok(pagedResult);
-        }
+        var client = new KeyPointsService.KeyPointsServiceClient(channel);
+        var response = await client.DeleteAsync(request);
 
-        return BadRequest();
+        return await Task.FromResult(new KeyPointDeleteResponse { });
     }
+
+
+    public override async Task<KeyPointGetAllResponse> GetAll(KeyPointGetAllRequest request, ServerCallContext context)
+    {
+        var httpHandler = new HttpClientHandler();
+        httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+        var client = new KeyPointsService.KeyPointsServiceClient(channel);
+        var response = await client.GetAllAsync(request);
+
+        return await Task.FromResult(new KeyPointGetAllResponse { KeyPoints = { response.KeyPoints } });
+    }
+
+
+    public override async Task<KeyPointGetByTourIdResponse> GetByTourId(KeyPointGetByTourIdRequest request, ServerCallContext context)
+    {
+        var httpHandler = new HttpClientHandler();
+        httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+        var client = new KeyPointsService.KeyPointsServiceClient(channel);
+        var response = await client.GetByTourIdAsync(request);
+
+        return await Task.FromResult(new KeyPointGetByTourIdResponse { KeyPoints = { response.KeyPoints } });
+    }
+
 }

@@ -1,78 +1,108 @@
-﻿using Explorer.BuildingBlocks.Core.UseCases;
-using Explorer.Stakeholders.API.Dtos;
-using Explorer.Stakeholders.API.Public;
-using Explorer.Stakeholders.Core.Domain;
-using Explorer.Stakeholders.Core.UseCases;
-using FluentResults;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+﻿using Grpc.Core;
+using Grpc.Net.Client;
+using GrpcServiceTranscoding;
 
 namespace Explorer.API.Controllers
 {
-    [Authorize(Policy = "nonAdministratorPolicy")]
-    [Route("api/follower")]
-    public class FollowerController : BaseApiController
+
+    public class FollowerController : FollowersService.FollowersServiceBase
     {
-        private readonly IFollowerService _followerService;
-        private readonly IUserService _userService;
-        public FollowerController(IFollowerService followerService, IUserService userService)
+
+        private readonly ILogger<FollowerController> _logger;
+
+        public FollowerController(ILogger<FollowerController> logger)
         {
-            _followerService = followerService;
-            _userService = userService;
+            _logger = logger;
         }
 
-        [HttpGet("followers/{id:long}")]
-        public ActionResult<PagedResult<FollowerResponseWithUserDto>> GetFollowers([FromQuery] int page, [FromQuery] int pageSize, long id)
+        public override async Task<GetUserByUsernameResponse> GetUserByUsername(GetUserByUsernameRequest request, ServerCallContext context)
         {
-            long userId = id;
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null && identity.IsAuthenticated)
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://followers:8084/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new FollowersService.FollowersServiceClient(channel);
+            var response = await client.GetUserByUsernameAsync(request);
+            Console.WriteLine("USERNAME: " + response.User);
+
+            return await Task.FromResult(new GetUserByUsernameResponse
             {
-                userId = long.Parse(identity.FindFirst("id").Value);
-            }
-            var result = _followerService.GetFollowers(page, pageSize, userId);
-            return CreateResponse(result);
+                User = response.User
+            });
         }
-        [HttpGet("followings/{id:long}")]
-        public ActionResult<PagedResult<FollowingResponseWithUserDto>> GetFollowings([FromQuery] int page, [FromQuery] int pageSize, long id)
+
+        public override async Task<GetFollowersResponse> GetFollowers(GetFollowersRequest request, ServerCallContext context)
         {
-            long userId = id;
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null && identity.IsAuthenticated)
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://followers:8084/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new FollowersService.FollowersServiceClient(channel);
+            var response = await client.GetFollowersAsync(request);
+            Console.WriteLine("FOLLOWERS RESPONSE: " + response.Users);
+
+            return await Task.FromResult(new GetFollowersResponse
             {
-                userId = long.Parse(identity.FindFirst("id").Value);
-            }
-            var result = _followerService.GetFollowings(page, pageSize, userId);
-            return CreateResponse(result);
+                Users = { response.Users }
+            });
         }
 
-        [HttpDelete("{id:long}")]
-        public ActionResult Delete(long id)
+        public override async Task<GetFollowingsResponse> GetFollowings(GetFollowingsRequest request, ServerCallContext context)
         {
-            var result = _followerService.Delete(id);
-            return CreateResponse(result);
-        }
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://followers:8084/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-        [HttpPost]
-        public ActionResult<FollowerResponseDto> Create([FromBody] FollowerCreateDto follower)
-        {
-            var result = _followerService.Create(follower);
-            return CreateResponse(result);
-        }
+            var client = new FollowersService.FollowersServiceClient(channel);
+            var response = await client.GetFollowingsAsync(request);
+            Console.WriteLine("FOLLOWINGS: " + response.Users);
 
-        [HttpGet("search/{searchUsername}")]
-        public ActionResult<PagedResult<UserResponseDto>> GetSearch([FromQuery] int page, [FromQuery] int pageSize, string searchUsername)
-        {
-            long userId = 0;
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null && identity.IsAuthenticated)
+            return await Task.FromResult(new GetFollowingsResponse
             {
-                userId = long.Parse(identity.FindFirst("id").Value);
-            }
-            var result = _userService.SearchUsers(0, 0, searchUsername, userId);
-            return CreateResponse(result);
+                Users = { response.Users }
+            });
         }
+
+        public override async Task<GetRecommendedUsersResponse> GetRecommendedUsers(GetRecommendedUsersRequest request, ServerCallContext context)
+        {
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://followers:8084/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new FollowersService.FollowersServiceClient(channel);
+            var response = await client.GetRecommendedUsersAsync(request);
+            Console.WriteLine("RECOMMENDED: " + response.Users);
+
+            return await Task.FromResult(new GetRecommendedUsersResponse
+            {
+                Users = { response.Users }
+            });
+        }
+
+        public override async Task<FollowResponse> Follow(FollowRequest request, ServerCallContext context)
+        {
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://followers:8084/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new FollowersService.FollowersServiceClient(channel);
+            var response = await client.FollowAsync(request);
+
+            return await Task.FromResult(new FollowResponse { });
+        }
+
+        public override async Task<UnfollowResponse> Unfollow(UnfollowRequest request, ServerCallContext context)
+        {
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://followers:8084/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new FollowersService.FollowersServiceClient(channel);
+            var response = await client.UnfollowAsync(request);
+
+            return await Task.FromResult(new UnfollowResponse { });
+        }
+
     }
 
 }

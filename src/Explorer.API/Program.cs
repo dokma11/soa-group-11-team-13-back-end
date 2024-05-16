@@ -1,5 +1,11 @@
+using Explorer.API.Controllers;
+using Explorer.API.Controllers.Author;
 using Explorer.API.Startup;
 using Explorer.Tours.Core.UseCases;
+using EquipmentController = Explorer.API.Controllers.Administrator.Administration.EquipmentController;
+using CommentController = Explorer.API.Controllers.Tourist.CommentController;
+using KeyPointController = Explorer.API.Controllers.Author.TourAuthoring.KeyPointController;
+using TourController = Explorer.API.Controllers.Author.TourAuthoring.TourController;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,19 +18,15 @@ builder.Services.ConfigureAuth();
 
 builder.Services.RegisterModules();
 
+builder.Services.AddGrpc().AddJsonTranscoding();
+
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-else
-{
-    app.UseExceptionHandler("/error");
-    app.UseHsts();
-}
+
+app.UseDeveloperExceptionPage();
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 app.UseRouting();
 app.UseCors(corsPolicy);
@@ -34,6 +36,14 @@ app.UseAuthorization();
 app.UseStaticFiles();
 
 app.MapControllers();
+app.MapGrpcService<FollowerController>();
+app.MapGrpcService<FacilityController>();
+app.MapGrpcService<TourController>();
+app.MapGrpcService<KeyPointController>();
+app.MapGrpcService<EquipmentController>();
+app.MapGrpcService<CommentController>();
+app.MapGrpcService<BlogController>();
+app.MapGrpcService<BlogRecommendationsController>();
 
 app.Run();
 

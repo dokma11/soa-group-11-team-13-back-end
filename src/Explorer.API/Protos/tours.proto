@@ -1,0 +1,276 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcServiceTranscoding";
+import "Protos/google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+//package Tours;
+
+service ToursService {
+  rpc GetAllTours(GetAllToursRequest) returns (GetAllToursResponse) {
+       option (google.api.http) = {
+          get: "/tour/all"
+       };
+  }
+  rpc GetPublishedTours(GetPublishedToursRequest) returns (GetPublishedToursResponse) {
+    option (google.api.http) = {
+          get: "/tour/published"
+    };
+  }
+  rpc GetTourById(GetTourByIdRequest) returns (GetTourByIdResponse) {
+    option (google.api.http) = {
+          get: "/tour"
+    };
+  }
+  rpc GetToursByAuthorId(GetToursByAuthorIdRequest) returns (GetToursByAuthorIdResponse) {
+    option (google.api.http) = {
+          get: "/tour/authors"
+    };
+  }
+  rpc CreateTour(CreateTourRequest) returns (CreateTourResponse) {
+      option (google.api.http) = {
+          post: "/tour"
+          body: "*"
+      };
+  }
+  rpc UpdateTour(UpdateTourRequest) returns (UpdateTourResponse) {
+    option (google.api.http) = {
+          put: "/tour"
+          body: "*"
+      };
+  }
+  rpc DeleteTour(DeleteTourRequest) returns (DeleteTourResponse) {
+     option (google.api.http) = {
+          delete: "/tour"
+     };
+  }
+  rpc PublishTour(PublishTourRequest) returns (PublishTourResponse) {
+    option (google.api.http) = {
+          put: "/tour/publish"
+          body: "*"
+     };
+  }
+  rpc ArchiveTour(ArchiveTourRequest) returns (ArchiveTourResponse) {
+    option (google.api.http) = {
+          put: "/tour/archive"
+          body: "*"
+     };
+  }
+  rpc AddToursDurations(AddToursDurationsRequest) returns (AddToursDurationsResponse) {
+    option (google.api.http) = {
+          put: "/tour/durations"
+          body: "*"
+     };
+  }
+  rpc AddToursEquipment(AddToursEquipmentRequest) returns (AddToursEquipmentResponse) {
+    option (google.api.http) = {
+          post: "/tour/equipment"
+          body: "*"
+     };
+  }
+  rpc DeleteToursEquipment(DeleteToursEquipmentRequest) returns (DeleteToursEquipmentResponse) {
+    option (google.api.http) = {
+          delete: "/tour/equipment"
+     };
+  }
+  rpc GetToursEquipment(GetToursEquipmentRequest) returns (GetToursEquipmentResponse) {
+     option (google.api.http) = {
+          get: "/tour/equipment"
+     };
+  }
+}
+
+message Tour {
+  int64 id = 1;
+  int32 authorId = 2;
+  string name = 3;
+  string description = 4;
+  int32 difficulty = 5;
+  repeated string tags = 6;
+  enum TourStatus {
+    Draft = 0;
+    Published = 1;
+    Archived = 2;
+    Ready = 3;
+  }
+  TourStatus status = 7;
+  double price = 8;
+  double distance = 9;
+  google.protobuf.Timestamp publishDate = 10;
+  google.protobuf.Timestamp archiveDate = 11;
+  enum TourCategory {
+    Adventure = 0;
+    FamilyTrips = 1;
+    Cruise = 2;
+    Cultural = 3;
+  }
+  TourCategory category = 12;
+  bool isDeleted = 13;
+  repeated TourKeyPoint keyPoints = 14;
+  repeated TourEquipment equipment = 15;
+  repeated TourReview reviews = 16;
+  repeated TourDuration durations = 17;
+}
+
+message TourEquipment {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  repeated Tour tours = 4;
+}
+
+message TourFacility {
+  int64 id = 1;
+  int64 authorId = 2;
+  string name = 3;
+  string description = 4;
+  double longitude = 5;
+  double latitude = 6;
+  enum Category {
+    Restaurant = 0;
+    ParkingLot = 1;
+    Toilet = 2;
+    Hospital = 3;
+    Cafe = 4;
+    Pharmacy = 5;
+    ExchangeOffice = 6;
+    BusStop = 7;
+    Shop = 8;
+    Other = 9;
+  };
+  Category category = 8;
+  string imagePath = 9;
+}
+
+message TourKeyPoint {
+  int64 id = 1;
+  int64 tourId = 2;
+  string name = 3;
+  string description = 4;
+  double longitude = 5;
+  double latitude = 6;
+  string locationAddress = 7;
+  string imagePath = 8;
+  int64 order = 9;
+}
+
+message TourDuration {
+  int32 duration = 1;
+  enum TransportType {
+    Walking = 0;
+    Bicycle = 1;
+    Car = 2;
+  }
+  TransportType transportType = 2;
+}
+
+message TourReview {
+  int64 id = 1;
+  int32 rating = 2;
+  string comment = 3;
+  int32 touristId = 4;
+  int64 tourId = 5;
+  google.protobuf.Timestamp tourVisitDate = 6;
+  google.protobuf.Timestamp commentDate = 7;
+  repeated string images = 8;
+}
+
+message TourEquipmentIds {
+  string tourId = 1;
+  string equipmentId = 2;
+}
+
+message GetAllToursRequest {
+}
+
+message GetAllToursResponse {
+  repeated Tour tours = 1;
+}
+
+message GetPublishedToursRequest {
+}
+
+message GetPublishedToursResponse {
+  repeated Tour tours = 1;
+}
+
+message GetTourByIdRequest {
+  string ID = 1;
+}
+
+message GetTourByIdResponse {
+  Tour tour = 1;
+}
+
+message GetToursByAuthorIdRequest {
+  string AuthorId = 1;
+}
+
+message GetToursByAuthorIdResponse {
+  repeated Tour tours = 1;
+}
+
+message CreateTourRequest {
+  Tour tour = 1;
+}
+
+message CreateTourResponse {
+}
+
+message UpdateTourRequest {
+  Tour tour = 1;
+}
+
+message UpdateTourResponse {
+}
+
+message DeleteTourRequest {
+  string ID = 1;
+}
+
+message DeleteTourResponse {
+}
+
+message PublishTourRequest {
+  Tour tour = 1;
+}
+
+message PublishTourResponse {
+}
+
+message ArchiveTourRequest {
+  Tour tour = 1;
+}
+
+message ArchiveTourResponse {
+}
+
+message AddToursDurationsRequest {
+  Tour tour = 1;
+}
+
+message AddToursDurationsResponse {
+}
+
+message AddToursEquipmentRequest {
+  TourEquipmentIds ids = 1;
+}
+
+message AddToursEquipmentResponse {
+}
+
+message DeleteToursEquipmentRequest {
+  string tourId = 1;
+  string equipmentId = 2;
+}
+
+message DeleteToursEquipmentResponse {
+}
+
+message GetToursEquipmentRequest {
+  string tourId = 1;
+}
+
+message GetToursEquipmentResponse {
+  repeated TourEquipment equipment = 1;
+}

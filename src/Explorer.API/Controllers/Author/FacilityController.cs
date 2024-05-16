@@ -1,132 +1,92 @@
-﻿using Explorer.BuildingBlocks.Core.UseCases;
-using Explorer.Tours.API.Dtos;
+﻿using Grpc.Core;
+using Grpc.Net.Client;
+using GrpcServiceTranscoding;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System.Security.Claims;
-using System.Text;
 
 namespace Explorer.API.Controllers.Author
 {
-    [Authorize(Policy = "authorPolicy")]
-    [Route("api/facility")]
-    public class FacilityController : BaseApiController
+    public class FacilityController : FacilitiesService.FacilitiesServiceBase
     {
-        private static readonly HttpClient _sharedClient = new()
+        private readonly ILogger<FollowerController> _logger;
+
+        public FacilityController(ILogger<FollowerController> logger)
         {
-            BaseAddress = new Uri("http://localhost:8081/"),
-        };
-
-        [HttpGet]
-        public async Task<ActionResult<PagedResult<FacilityResponseDto>>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
-        {
-            var response = await _sharedClient.GetFromJsonAsync<List<FacilityResponseDto>>("facilities");
-
-            if (response != null)
-            {
-                var pagedResult = new PagedResult<FacilityResponseDto>(response, response.Count);
-                return Ok(pagedResult);
-            }
-
-            return BadRequest();
+            _logger = logger;
         }
 
-        [HttpGet("authorsFacilities")]
-        public async Task<ActionResult<PagedResult<FacilityResponseDto>>> GetByAuthorId([FromQuery] int page, [FromQuery] int pageSize)
+        public override async Task<GetAllFacilitiesResponse> GetAllFacilities(GetAllFacilitiesRequest request, ServerCallContext context)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var loggedInAuthor = int.Parse(identity.FindFirst("id").Value);
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            var response = await _sharedClient.GetFromJsonAsync<List<FacilityResponseDto>>("facilities/author/" + loggedInAuthor);
+            var client = new FacilitiesService.FacilitiesServiceClient(channel);
+            var response = await client.GetAllFacilitiesAsync(request);
+            Console.WriteLine("GET ALL FACILITIES: " + response.Facilities);
 
-            if (response != null)
+            return await Task.FromResult(new GetAllFacilitiesResponse
             {
-                var pagedResult = new PagedResult<FacilityResponseDto>(response, response.Count);
-                return Ok(pagedResult);
-            }
-
-            return BadRequest();
+                Facilities = { response.Facilities }
+            });
         }
 
-        [HttpPost]
-        public async Task<ActionResult<FacilityResponseDto>> Create([FromBody] FacilityCreateDto facility)
+        [Authorize(Policy = "authorPolicy")]
+        public override async Task<GetFacilitiesByAuthorIdResponse> GetFacilitiesByAuthorId(GetFacilitiesByAuthorIdRequest request, ServerCallContext context)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null && identity.IsAuthenticated)
-            {
-                facility.AuthorId = int.Parse(identity.FindFirst("id").Value);
-            }
+            var client = new FacilitiesService.FacilitiesServiceClient(channel);
+            var response = await client.GetFacilitiesByAuthorIdAsync(request);
+            Console.WriteLine("GET FACILITIES BY AUTHORID: " + response.Facilities);
 
-            try
+            return await Task.FromResult(new GetFacilitiesByAuthorIdResponse
             {
-                string json = JsonConvert.SerializeObject(facility);
-                StringContent content = new(json, Encoding.UTF8, "application/json");
-
-                HttpResponseMessage response = await _sharedClient.PostAsync("facilities", content);
-                response.EnsureSuccessStatusCode();
-                return Ok(response);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
+                Facilities = { response.Facilities }
+            });
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult<FacilityResponseDto>> Update(int id, [FromBody] FacilityUpdateDto facility)
+        [Authorize(Policy = "authorPolicy")]
+        public override async Task<CreateFacilityResponse> CreateFacility(CreateFacilityRequest request, ServerCallContext context)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
 
-            facility.Id = id;
+            var client = new FacilitiesService.FacilitiesServiceClient(channel);
+            var response = await client.CreateFacilityAsync(request);
+            Console.WriteLine("CREATE A FACILITY: " + request);
 
-            try
-            {
-                string json = JsonConvert.SerializeObject(facility);
-                StringContent content = new(json, Encoding.UTF8, "application/json");
-
-                var response = await _sharedClient.PutAsync("facilities/", content);
-                response.EnsureSuccessStatusCode();
-                return Ok(response);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
+            return await Task.FromResult(new CreateFacilityResponse { });
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult> Delete(int id)
+        [Authorize(Policy = "authorPolicy")]
+        public override async Task<UpdateFacilityResponse> UpdateFacility(UpdateFacilityRequest request, ServerCallContext context)
         {
-            try
-            {
-                var response = await _sharedClient.DeleteAsync("facilities/" + id);
-                response.EnsureSuccessStatusCode();
-                return Ok(response);
-            }
-            catch (HttpRequestException)
-            {
-                return BadRequest();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new FacilitiesService.FacilitiesServiceClient(channel);
+            var response = await client.UpdateFacilityAsync(request);
+            Console.WriteLine("UPDATE A FACILITY: ");
+
+            return await Task.FromResult(new UpdateFacilityResponse { });
+        }
+
+        [Authorize(Policy = "authorPolicy")]
+        public override async Task<DeleteFacilityResponse> DeleteFacility(DeleteFacilityRequest request, ServerCallContext context)
+        {
+            var httpHandler = new HttpClientHandler();
+            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var channel = GrpcChannel.ForAddress("http://tours:8081/", new GrpcChannelOptions { HttpHandler = httpHandler });
+
+            var client = new FacilitiesService.FacilitiesServiceClient(channel);
+            var response = await client.DeleteFacilityAsync(request);
+            Console.WriteLine("DELETE A FACILITY: ");
+
+            return await Task.FromResult(new DeleteFacilityResponse { });
         }
     }
 }

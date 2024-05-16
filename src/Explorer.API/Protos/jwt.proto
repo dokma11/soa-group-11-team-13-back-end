@@ -1,0 +1,20 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "GrpcServiceTranscoding";
+import "Protos/google/api/annotations.proto";
+
+
+service JwtService {
+  rpc GenerateToken(GenerateTokenRequest) returns (GenerateTokenResponse);
+}
+
+message GenerateTokenRequest {
+  string user_id = 1;
+  string username = 2;
+  string person_id = 3;
+  string role = 4;
+}
+
+message GenerateTokenResponse {
+  string token = 1;
+}

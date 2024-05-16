@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcServiceTranscoding";
+import "Protos/google/api/annotations.proto";
+
+//package KeyPoints;
+
+service KeyPointsService {
+  //rpc GetById(KeyPointGetByIdRequest) returns (KeyPointGetByIdResponse) {}
+
+  rpc GetAll(KeyPointGetAllRequest) returns (KeyPointGetAllResponse) {
+       option (google.api.http) = {
+          get: "/tour-authoring"
+       };
+  }
+  rpc GetByTourId(KeyPointGetByTourIdRequest) returns (KeyPointGetByTourIdResponse) {
+      option (google.api.http) = {
+          get: "/market-place/tours/key-points"
+       };
+  }
+  rpc Create(KeyPointCreateRequest) returns (KeyPointCreateResponse) {
+      option (google.api.http) = {
+          post: "/tour-authoring/tours/key-points",
+          body: "*"
+       };
+  }
+  rpc Update(KeyPointUpdateRequest) returns (KeyPointUpdateResponse) {
+      option (google.api.http) = {
+          put: "/tour-authoring/tours/key-points",
+          body: "*"
+       };
+  }
+  rpc Delete(KeyPointDeleteRequest) returns (KeyPointDeleteResponse) {
+      option (google.api.http) = {
+          delete: "/tour-authoring/tours/key-points"
+       };
+  }
+}
+
+message KeyPoint {
+  int64 id = 1;
+  int64 tourId = 2;
+  string name = 3;
+  string description = 4;
+  double longitude = 5;
+  double latitude = 6;
+  string locationAddress = 7;
+  string imagePath = 8;
+  int64 order = 9;
+}
+
+message KeyPointGetByIdRequest {
+  string ID = 1;
+}
+
+message KeyPointGetByIdResponse {
+  KeyPoint keyPoint = 1;
+}
+
+message KeyPointGetAllRequest {
+}
+
+message KeyPointGetAllResponse {
+  repeated KeyPoint keyPoints = 1;
+}
+
+message KeyPointGetByTourIdRequest {
+  string TourId = 1;
+}
+
+message KeyPointGetByTourIdResponse {
+  repeated KeyPoint keyPoints = 1;
+}
+
+message KeyPointCreateRequest {
+  KeyPoint keyPoint = 1;
+}
+
+message KeyPointCreateResponse {
+}
+
+message KeyPointUpdateRequest {
+  KeyPoint keyPoint = 1;
+}
+
+message KeyPointUpdateResponse {
+}
+
+message KeyPointDeleteRequest {
+  string ID = 1;
+}
+
+message KeyPointDeleteResponse {
+}

@@ -20,10 +20,10 @@ namespace Explorer.API.Controllers.Author
 
         private static readonly HttpClient _sharedClient = new()
         {
-            BaseAddress = new Uri("http://localhost:8081/"),
+            BaseAddress = new Uri("http://tours:8081/"),
         };
 
-        [HttpGet]
+        /*[HttpGet]
         public async Task<ActionResult<PagedResult<EquipmentResponseDto>>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
         {
             var response = await _sharedClient.GetFromJsonAsync<List<EquipmentResponseDto>>("equipment");
@@ -39,6 +39,6 @@ namespace Explorer.API.Controllers.Author
             }
 
             return BadRequest();
-        }
+        }*/
     }
 }

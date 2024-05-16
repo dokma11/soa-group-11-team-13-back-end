@@ -1,0 +1,165 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcServiceTranscoding";
+import "Protos/google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+//package Blogs;
+
+service BlogsService {
+  rpc CreateBlog(CreateBlogRequest) returns (CreateBlogResponse) {
+    option (google.api.http) = {
+        post: "/blogs"
+        body: "*"
+    };
+  }
+
+  rpc GetAllBlogs(GetAllBlogsRequest) returns (GetAllBlogsResponse) {
+    option (google.api.http) = {
+        get: "/blogs/all"
+    };
+  }
+
+  rpc GetBlogById(GetBlogByIdRequest) returns (GetBlogByIdResponse) {
+    option (google.api.http) = {
+        get: "/blogs/id"
+    };
+  }
+
+  rpc GetBlogsByAuthorsId(GetBlogsByAuthorsIdRequest) returns (GetBlogsByAuthorsIdResponse) {
+    option (google.api.http) = {
+        get: "/blogs/authorId"
+    };
+  }
+
+  rpc GetBlogsByAuthorsIds(GetBlogsByAuthorsIdsRequest) returns (GetBlogsByAuthorsIdsResponse) {
+    option (google.api.http) = {
+        get: "/blogs/authorIds"
+    };
+  }
+
+  rpc SearchBlogByName(SearchBlogByNameRequest) returns (SearchBlogByNameResponse) {
+    option (google.api.http) = {
+        get: "/blogs/search"
+    };
+  }
+
+  rpc PublishBlog(PublishBlogRequest) returns (PublishBlogResponse) {
+    option (google.api.http) = {
+        put: "/blogs"
+        body: "*"
+    };
+  }
+
+  rpc DeleteBlog(DeleteBlogRequest) returns (DeleteBlogResponse) {
+    option (google.api.http) = {
+        delete: "/blogs"
+    };
+  }
+}
+
+message Blog {
+  int32 id = 1;
+  string title = 2;
+  string description = 3;
+  enum BlogStatus {
+    Draft = 0;
+    Published = 1;
+    Closed = 2;
+    Active = 3;
+    Famous = 4;
+  }
+  BlogStatus status = 4;
+  int32 authorId = 5;
+  repeated BlogComment comments = 6;
+  repeated BlogVote votes = 7;
+  repeated BlogsRecommendation recommendations = 8;
+}
+
+message BlogsRecommendation {
+  int32 id = 1;
+  int32 blogId = 2;
+  int32 recommenderId = 3;
+  int32 recommendationReceiverId = 4;
+  Blog blog = 5;
+}
+
+message BlogComment {
+  int32 id = 1;
+  int32 authorId = 2;
+  int32 blogId = 3;
+  string text = 4;
+  google.protobuf.Timestamp createdAt = 5;
+  google.protobuf.Timestamp updatedAt = 6;
+}
+
+message BlogVote {
+  int32 id = 1;
+  int32 userId = 2;
+  int32 blogId = 3;
+  enum VoteType {
+    Downvote = 0;
+    Upvote = 1;
+  }
+  VoteType type = 4;
+}
+
+message CreateBlogRequest {
+  Blog blog = 1;
+}
+
+message CreateBlogResponse {
+}
+
+message GetBlogByIdRequest {
+  string ID = 1;
+}
+
+message GetBlogByIdResponse {
+  Blog blog = 1;
+}
+
+message GetAllBlogsRequest {
+}
+
+message GetAllBlogsResponse {
+  repeated Blog blogs = 1;
+}
+
+message GetBlogsByAuthorsIdRequest {
+  string AuthorId = 1;
+}
+
+message GetBlogsByAuthorsIdResponse {
+  repeated Blog blogs = 1;
+}
+
+message GetBlogsByAuthorsIdsRequest {
+  string AuthorsIds = 1;
+}
+
+message GetBlogsByAuthorsIdsResponse {
+  repeated Blog blogs = 1;
+}
+
+message SearchBlogByNameRequest {
+  string Title = 1;
+}
+
+message SearchBlogByNameResponse {
+  repeated Blog blogs = 1;
+}
+
+message PublishBlogRequest {
+  Blog blog = 1;
+}
+
+message PublishBlogResponse {
+}
+
+message DeleteBlogRequest {
+  string ID = 1;
+}
+
+message DeleteBlogResponse {
+}

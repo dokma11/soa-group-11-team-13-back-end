@@ -1,0 +1,143 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcServiceTranscoding";
+import "Protos/google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+//package Equipment;
+
+service EquipmentService {
+  /*rpc GetById(EquipmentGetByIdRequest) returns (EquipmentGetByIdResponse) {
+      option (google.api.http) = {
+          get: "/tour/equipment"
+     };
+  }*/
+  rpc GetAll(EquipmentGetAllRequest) returns (EquipmentGetAllResponse) {
+       option (google.api.http) = {
+          get: "/equipment"
+     };
+  }
+  rpc Create(EquipmentCreateRequest) returns (EquipmentCreateResponse) {
+      option (google.api.http) = {
+          post: "/equipment",
+          body: "*"
+     };
+  }
+}
+
+message Equipment {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  repeated EquipmentTour tours = 4;
+}
+
+message EquipmentTour {
+  int64 id = 1;
+  int32 authorId = 2;
+  string name = 3;
+  string description = 4;
+  int32 difficulty = 5;
+  repeated string tags = 6;
+  enum EquipmentTourStatus {
+    Draft = 0;
+    Published = 1;
+    Archived = 2;
+    Ready = 3;
+  }
+  EquipmentTourStatus status = 7;
+  double price = 8;
+  double distance = 9;
+  google.protobuf.Timestamp publish_date = 10;
+  google.protobuf.Timestamp archive_date = 11;
+  enum TourCategory {
+    Adventure = 0;
+    FamilyTrips = 1;
+    Cruise = 2;
+    Cultural = 3;
+  }
+  TourCategory category = 12;
+  bool is_deleted = 13;
+  repeated EquipmentKeyPoint keyPoints = 14;
+  repeated Equipment equipment = 15;
+  repeated EquipmentReview reviews = 16;
+  repeated EquipmentTourDuration durations = 17;
+}
+
+message EquipmentKeyPoint {
+  int64 id = 1;
+  int64 tourId = 2;
+  string name = 3;
+  string description = 4;
+  double longitude = 5;
+  double latitude = 6;
+  string locationAddress = 7;
+  string imagePath = 8;
+  int64 order = 9;
+}
+
+message EquipmentFacility {
+  int64 id = 1;
+  int64 authorId = 2;
+  string name = 3;
+  string description = 4;
+  double longitude = 5;
+  double latitude = 6;
+  enum Category {
+    Restaurant = 0;
+    ParkingLot = 1;
+    Toilet = 2;
+    Hospital = 3;
+    Cafe = 4;
+    Pharmacy = 5;
+    ExchangeOffice = 6;
+    BusStop = 7;
+    Shop = 8;
+    Other = 9;
+  };
+  Category category = 8;
+  string imagePath = 9;
+}
+
+message EquipmentTourDuration {
+  int32 duration = 1;
+  enum TransportType {
+    Walking = 0;
+    Bicycle = 1;
+    Car = 2;
+  }
+  TransportType transportType = 2;
+}
+
+message EquipmentReview {
+  int64 id = 1;
+  int32 rating = 2;
+  string comment = 3;
+  int32 touristId = 4;
+  int64 tourId = 5;
+  google.protobuf.Timestamp tourVisitDate = 6;
+  google.protobuf.Timestamp commentDate = 7;
+  repeated string images = 8;
+}
+
+message EquipmentGetByIdRequest {
+  string ID = 1;
+}
+
+message EquipmentGetByIdResponse {
+  Equipment equipment = 1;
+}
+
+message EquipmentGetAllRequest {
+}
+
+message EquipmentGetAllResponse {
+  repeated Equipment equipment = 1;
+}
+
+message EquipmentCreateRequest {
+  Equipment equipment = 1;
+}
+
+message EquipmentCreateResponse {
+}

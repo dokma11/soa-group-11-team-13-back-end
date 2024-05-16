@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+option csharp_namespace = "GrpcServiceTranscoding";
+import "Protos/google/api/annotations.proto";
+
+service ReviewsService {
+  rpc GetReviewById(GetReviewByIdRequest) returns (GetReviewByIdResponse) {}
+  rpc GetAllReviews(GetAllReviewsRequest) returns (GetAllReviewsResponse) {}
+  rpc CreateReview(CreateReviewRequest) returns (CreateReviewResponse) {}
+  rpc UpdateReview(UpdateReviewRequest) returns (UpdateReviewResponse) {}
+  rpc DeleteReview(DeleteReviewRequest) returns (DeleteReviewResponse) {}
+}
+
+message Review {
+  int64 id = 1;
+  int32 rating = 2;
+  string comment = 3;
+  int32 touristId = 4;
+  int64 tourId = 5;
+  google.protobuf.Timestamp tourVisitDate = 6;
+  google.protobuf.Timestamp commentDate = 7;
+  repeated string images = 8;
+}
+
+message GetReviewByIdRequest {
+  string ID = 1;
+}
+
+message GetReviewByIdResponse {
+  Review review = 1;
+}
+
+message GetAllReviewsRequest {
+}
+
+message GetAllReviewsResponse {
+  repeated Review reviews = 1;
+}
+
+message CreateReviewRequest {
+  Review review = 1;
+}
+
+message CreateReviewResponse {
+}
+
+message UpdateReviewRequest {
+  Review review = 1;
+}
+
+message UpdateReviewResponse {
+}
+
+message DeleteReviewRequest {
+  string ID = 1;
+}
+
+message DeleteReviewResponse {
+}
